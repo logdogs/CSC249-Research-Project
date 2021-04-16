@@ -5,7 +5,7 @@ import imageio
 import matplotlib.pyplot as plt
 import PIL.Image as im
 import subprocess
-import urllib
+import sys
 
 # Simple grayscale calculation function
 def grayscale(image):
@@ -99,4 +99,14 @@ def run_CNN(input_name,save_name):
     subprocess.call("model_test.py " + save_name, shell=True)
 
 # I'll probably change this to take arguments from the command line
-run_CNN("test_character2.png", "test_resized2.png")
+# run_CNN("test_character2.png", "test_resized2.png")
+
+def main():
+    args = sys.argv
+    assert len(args) == 2, "Should run as 'python primer.py <image_of_character>'"
+    input_name = args[1]
+    file_name = input_name.split('.')[0]
+    file_name += "_resized.png"
+    run_CNN(input_name,file_name)
+
+main()
