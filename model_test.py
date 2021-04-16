@@ -11,7 +11,8 @@ import copy
 import argparse
 import numpy as np
 import tensorflow as tf
-from scipy.misc import imread
+# from scipy.misc import imread
+from imageio import imread
 from keras.utils.np_utils import to_categorical
 from keras import backend
 from the_model import model_8
@@ -48,8 +49,10 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 if args.infile:
-    test_data = np.ndarray([1, IMG_SIZE, IMG_SIZE], dtype=np.uint8)
+    # test_data = np.ndarray([1, IMG_SIZE, IMG_SIZE], dtype=np.uint8)
+    test_data = np.ndarray([1,IMG_SIZE,IMG_SIZE],dtype=np.uint8)
     test_data[0] = imread(args.infile)
+    # test_data[0] = 
 
 else:
     label_pngs = []
