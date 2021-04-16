@@ -7,13 +7,13 @@ import PIL.Image as im
 import subprocess
 import urllib
 
-image = imageio.imread("test_character.png")
-# It looks like first we have to take the input image (sigma) and do two things:
-#   Shrink it
-#   Convert it to either black and white or gray (idk if it requires bw or we can pass with grayscale)
+# Simple grayscale calculation function
 def grayscale(image):
     return np.dot(image[:,:], [1/3,1/3,1/3])
 
+# Pretty straightforward, calculates the average darkness value (brightness) as well as the darkest value.
+# I combined them into one function because it's just more efficient to calculate them both at the same
+#   time, rather than add another \Theta(n^2) amount of run time, where n is the size of the image.
 def get_avg_and_darkest(gray):
     avg_darkness = 0.0
     darkest_val = 0.0
@@ -25,6 +25,10 @@ def get_avg_and_darkest(gray):
     avg_darkness = avg_darkness / (gray.shape[0] * gray.shape[1])
     return avg_darkness,darkest_val
 
+# This is not a very sophisticated method because I am not a clever man. It basically just calculates the
+#   threshold as a normalized standardized score (C * Z, where C=1000 and Z=(X - \mu) / \sigma)
+#   But why did I use 1000 and why Z? Well, because it worked when I tried it... again, not a clever man.
+#   (now in my defence, 1000 because it got a really good value from Z which I could tell had potential)
 def get_threshold(gray,avg_darkness,darkest_val):
     std_darkness = 0.0
     for i in range(gray.shape[0]):
@@ -36,6 +40,11 @@ def get_threshold(gray,avg_darkness,darkest_val):
     threshold *= 1000
     return threshold
 
+# Okay, not exactly binary anymore, but originally it was. The CNN interestingly handled the binary images
+#   very poorly (it was obvious from the confidence states (0 <= x_max <= 20) it had no idea which it was).
+#   I took a gander at the data we were given with the CNN and the values of pixels in it, and found out
+#   that that (\forall_{p \in I})[(p \in character) \iff (0 < p < 1)]. So I just changed it such that if
+#   the pixel passes the threshold, it retains its value. Otherwise, it's 0 (black). 
 def create_binary_image(gray,threshold):
     image_prime = np.zeros_like(gray)
     for i in range(gray.shape[0]):
@@ -46,6 +55,8 @@ def create_binary_image(gray,threshold):
                 image_prime[i,j] = gray[i,j]
     return image_prime
 
+# Finds the exact bounding box for the character in the image. Do note that it expects only one character
+#   to be in the image.
 def bound_image(bin_image):
     max_x = 0
     max_y = 0
@@ -65,30 +76,27 @@ def bound_image(bin_image):
     image_prime = bin_image[min_x:max_x, min_y:max_y]
     return image_prime
 
+# Will give you the resized and properly formatted version of the original image based on the filename
 def convert_for_CNN(image_name):
     image = imageio.imread(image_name)
     gray = grayscale(image)
-    plt.figure()
-    plt.imshow(gray)
-    plt.show()
     avg_d,darkest = get_avg_and_darkest(gray)
     binary_image = create_binary_image(gray,get_threshold(gray,avg_d,darkest))
     cropped = bound_image(binary_image)
     resized = cv2.resize(cropped,(96,96),interpolation=cv2.INTER_CUBIC)
     return resized
 
+# Quick save function that probably wasn't necessary
 def save(resized,name):
     # Assuming you added the file extension to the name
     cv2.imwrite(name,resized)
 
+# Call the CNN with our \Sigma
 def run_CNN(input_name,save_name):
     # Using the notation of our formalization, input_image == \Sigma
     to_save = convert_for_CNN(input_name)
     save(to_save,save_name)
     subprocess.call("model_test.py " + save_name, shell=True)
 
+# I'll probably change this to take arguments from the command line
 run_CNN("test_character2.png", "test_resized2.png")
-# plt.figure()
-# plt.imshow(resized,cmap='gray')
-# plt.show()
-# cv2.imwrite("test_resized.png", resized)
