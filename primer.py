@@ -52,10 +52,10 @@ def get_threshold(gray,avg_darkness,darkest_val):
     for i in range(gray.shape[0]):
         for j in range(gray.shape[1]):
             std_darkness += (gray[i,j] - avg_darkness) ** 2
-    std_darkness /= (gray.shape[0] + gray.shape[1])
+    std_darkness /= (gray.shape[0] * gray.shape[1])
     std_darkness = math.sqrt(std_darkness)
-    threshold = (darkest_val - avg_darkness) / std_darkness
-    threshold *= 1000
+    threshold = (darkest_val - avg_darkness) + std_darkness
+    # threshold *= 1000
     return threshold
 
 # Okay, not exactly binary anymore, but originally it was. The CNN interestingly handled the binary images
@@ -114,7 +114,7 @@ def run_CNN(input_name,save_name):
     # Using the notation of our formalization, input_image == \Sigma
     to_save = convert_for_CNN(input_name)
     save(to_save,save_name)
-    subprocess.call("model_test.py " + save_name, shell=True)
+    subprocess.call("python model_test.py " + save_name, shell=True)
 
 # I'll probably change this to take arguments from the command line
 # run_CNN("test_character2.png", "test_resized2.png")

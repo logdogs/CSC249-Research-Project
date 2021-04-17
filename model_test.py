@@ -5,12 +5,18 @@
 """
 
 import os
+import csv
 import codecs
 import random
 import copy
 import argparse
 import numpy as np
 import tensorflow as tf
+import PIL.Image as Image
+import PIL.ImageFont as ImageFont
+import PIL.ImageDraw as ImageDraw
+import cv2
+
 # from scipy.misc import imread
 from imageio import imread
 from keras.utils.np_utils import to_categorical
@@ -115,4 +121,65 @@ else:
     print("Loss:", loss)
     print("Accuracy:", acc)
 
+
+def get_structure(character):
+    #file = open("cnn_output_character.txt", 'r', encoding='utf8')
+    #character = file.read()
+    with open('cld2.csv', newline='', encoding='utf8') as csvfile:
+        reader = csv.DictReader(csvfile)
+
+        for row in reader:
+            if row['C1'] == character:
+                return row['C1Structure'], row['C1SR'], row['C1PR']
+
+
+def bound_image(bin_image):
+    max_x = 0
+    max_y = 0
+    min_x = 10000000
+    min_y = 10000000
+    for i in range(bin_image.shape[0]):
+        for j in range(bin_image.shape[1]):
+            if bin_image[i,j] > 0:
+                if i > max_x:
+                    max_x = i
+                if i < min_x:
+                    min_x = i
+                if j > max_y:
+                    max_y = j
+                if j < min_y:
+                    min_y = j
+    image_prime = bin_image[min_x:max_x, min_y:max_y]
+    return image_prime
+
+def grayscale(image):
+    return np.dot(image[:,:], [1/3,1/3,1/3])
+
+
+top_character = list(top)[0]
+
+## Make canvas and set the color
+img = np.zeros((200,400,3),np.uint8)
+b,g,r,a = 255,255,255,0
+
+## Use simsum.ttc to write Chinese.
+fontpath = "./simsun.ttc" # <== 这里是宋体路径 
+font = ImageFont.truetype(fontpath, 175)
+img_pil = Image.fromarray(img)
+draw = ImageDraw.Draw(img_pil)
+#draw.text((50, 80),  "端午节就要到了", font = font, fill = (b, g, r, a))
+draw.text((20, 20), top_character, font = font, fill = (b, g, r, a))
+img = np.array(img_pil)
+
+cropped = bound_image(grayscale(img))
+resized = cv2.resize(cropped,(96,96),interpolation=cv2.INTER_CUBIC)
+
+## Display 
+cv2.imshow("res", resized);cv2.waitKey();cv2.destroyAllWindows()
+#cv2.imwrite("res.png", img)
+
+
+
+
+print(get_structure(top_character))
 backend.clear_session()
