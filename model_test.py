@@ -93,9 +93,11 @@ def top_predictions(n, pred):
 
     return tops
 
-
+top = ''
 if args.infile:
     preds = model.predict(x_test)
+    top3 = top_predictions(3,preds[0])
+    top = top3[0]
     print("Prediction: top3:", top_predictions(3, preds[0]))
 
 elif Pred_Details:
@@ -103,8 +105,11 @@ elif Pred_Details:
     for k, v in enumerate(preds):
         p = np.argmax(v)
         if p != test_label[k]:
-            print("Wrong prediction: top3:", top_predictions(3, v),
+            top3 = top_predictions(3,v)
+            top = top3[0]
+            print("Wrong prediction: top3:", top3,
                   "label/file:", label_pngs[k][1], label_pngs[k][2])
+    
 else:
     loss, acc = model.evaluate(x_test, y_test, batch_size=64)
     print("Loss:", loss)
