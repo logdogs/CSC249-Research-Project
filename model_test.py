@@ -175,11 +175,9 @@ cropped = bound_image(grayscale(img))
 resized = cv2.resize(cropped,(96,96),interpolation=cv2.INTER_CUBIC)
 
 ## Display 
-cv2.imshow("res", resized);cv2.waitKey();cv2.destroyAllWindows()
-#cv2.imwrite("res.png", img)
+cv2.imshow("res", resized)
+cv2.waitKey()
+cv2.destroyAllWindows()
+cv2.imwrite("res.png", resized)
 
-
-
-
-print(get_structure(top_character))
 backend.clear_session()
