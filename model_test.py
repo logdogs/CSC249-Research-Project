@@ -55,10 +55,8 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 if args.infile:
-    # test_data = np.ndarray([1, IMG_SIZE, IMG_SIZE], dtype=np.uint8)
     test_data = np.ndarray([1,IMG_SIZE,IMG_SIZE],dtype=np.uint8)
-    test_data[0] = imread(args.infile)
-    # test_data[0] = 
+    test_data[0] = imread(args.infile) 
 
 else:
     label_pngs = []
@@ -175,9 +173,10 @@ cropped = bound_image(grayscale(img))
 resized = cv2.resize(cropped,(96,96),interpolation=cv2.INTER_CUBIC)
 
 ## Display 
-cv2.imshow("res", resized)
-cv2.waitKey()
-cv2.destroyAllWindows()
+# cv2.imshow("res", resized)
+# cv2.waitKey()
+# cv2.destroyAllWindows()
 cv2.imwrite("res.png", resized)
+
 
 backend.clear_session()

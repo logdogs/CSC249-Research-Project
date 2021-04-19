@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import PIL.Image as im
 import subprocess
 import sys
+import comparisons
 
 # Function to remove the shadows from an image so that our method for finding the character will work
 def remove_shadows(image):
@@ -116,8 +117,6 @@ def run_CNN(input_name,save_name):
     save(to_save,save_name)
     subprocess.call("python model_test.py " + save_name, shell=True)
 
-# I'll probably change this to take arguments from the command line
-# run_CNN("test_character2.png", "test_resized2.png")
 
 def main():
     args = sys.argv
@@ -126,5 +125,8 @@ def main():
     file_name = input_name.split('.')[0]
     file_name += "_resized.png"
     run_CNN(input_name,file_name)
+    sigma = convert_for_CNN(input_name)
+    sigma_prime = imageio.imread("res.png")
+    comparisons.structural_similarity(sigma,sigma_prime)
 
 main()
