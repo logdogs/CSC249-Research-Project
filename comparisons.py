@@ -24,10 +24,110 @@ def structural_similarity(character, comparison):
     
     og_comp = img_as_float(char_arr)
     rows,cols = og_comp.shape
-    ssim = ss(comp_arr, og_comp)
+    ssim1 = ss(comp_arr, og_comp)
+    ssim2 = SSIM(comp_arr, og_comp)
+    print(ssim1)
+    print(ssim2)
+    plt.figure()
+    plt.imshow(comp_arr,cmap='gray')
+    plt.figure()
+    plt.imshow(og_comp,cmap='gray')
+    plt.show()
+
+
+# So probably remove the luminocity and contrast calculations from the formulation of SSIM
+#   If possible also add in (via multiplication as to fit the formulation), component for characters
+#   (idk, maybe like something that looks at edges, stright lines, etc.)
+
+# This is a straightforward definition from the formalization on:
+#   https://medium.com/srm-mic/all-about-structural-similarity-index-ssim-theory-code-in-pytorch-6551b455541e
+#   Critically note that x is an image
+def luminance(x):
+    mu_x = 0.0
+    N = 96 * 96
+    sigma = 0.0
+    for i in range(96):
+        for j in range(96):
+            sigma += x[i,j]
+    mu_x = (1/N) * sigma
+    return mu_x
+def contrast(x):
+    sigma_x = 0.0
+    N = 96 * 96
+    sigma = 0.0
+    mu_x = luminance(x)
+    for i in range(96):
+        for j in range(96):
+            sigma += (x[i,j] - mu_x) ** 2
+    sigma_x = ((1/(N-1)) * sigma) ** (1/2)
+    return sigma_x
+# How dare you question my function naming conventions...
+def var(x,y):
+    N = 96 * 96
+    s = 0.0
+    mu_x = luminance(x)
+    mu_y = luminance(y)
+    for i in range(96):
+        for j in range(96):
+            s += (x[i,j] - mu_x) * (y[i,j] - mu_y)
+    s *= 1/(N-1)
+    return s
+def structure(x):
+    mu_x = luminance(x)
+    sigma_x = contrast(x)
+    res_vect = np.copy(x)
+    for i in range(96):
+        for j in range(96):
+            res_vect[i,j] = (x[i,j] - mu_x) / sigma_x
+    return res_vect
+# Now the comparison functions
+def l(x,y):
+    mu_x = luminance(x)
+    mu_y = luminance(y)
+    # Using the web's example of C_1 and C_2
+    c1 = (0.01) ** 2
+    return (2 * mu_x * mu_y + c1)/((mu_x ** 2) + (mu_y ** 2) + c1)
+def c(x,y):
+    sigma_x = contrast(x)
+    sigma_y = contrast(y)
+    c2 = (0.03) ** 2
+    return (2 * sigma_x * sigma_y + c2)/((sigma_x ** 2) + (sigma_y ** 2) + c2)
+def s(x,y):
+    sigma_xy = var(x,y)
+    sigma_x = contrast(x)
+    sigma_y = contrast(y)
+
+    c3 = ((0.03) ** 2) /2
+    return (sigma_xy + c3)/(sigma_x * sigma_y + c3)
+# The location component from my formalization (g for \Gamma)
+def g(x,y):
+    c_1 = []
+    c_2 = []
+    for i in range(96):
+        for j in range(96):
+            if x[i,j] != 0:
+                c_1.append([i,j])
+            if y[i,j] != 0:
+                c_2.append([i,j])
+    alpha_1 = 1 / len(c_1)
+    alpha_2 = 1 / len(c_2)
+    # As per the convention in the file, 's' is short for a sum
+    s_1 = 0.0
+    s_2 = 0.0
+    for pixel in c_1:
+        s_1 += sum(pixel)
+    for pixel in c_2:
+        s_2 += sum(pixel)
+    s_1 *= alpha_1
+    s_2 *= alpha_2
+    return abs(s_1 - s_2)
+# The moment of truth (not bad! Just... different...)
+def SSIM(x,y):
+    # I'm not doing the simplified form for a very definitive reason
+    # -->This allows us more ability to manipulate each of them in terms of which we think is more
+    #       important/relevant to our comparison. I'm thinking about downplaying l and c
+    # We can very easily just algebraically manipulate this to have way better (by (big) constant factors)
+    #   run times. Right now ain't great, but not tragically bad
+    # For the sake of run time (tho it ain't much better), I left out the exponents 
+    return (l(x,y) ** (1/2)) * (c(x,y) ** (1/2)) * s(x,y) * g(x,y)
     
-    print(ssim)
-# da_bad --> .46
-# da_okay --> .558
-# da_good --> .529
-# da_perfect --> 
