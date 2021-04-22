@@ -155,7 +155,8 @@ def grayscale(image):
 
 
 top_character = list(top)[0]
-
+file = open('cnn_output_character.txt', 'w', encoding='utf8')
+file.write(top_character)
 ## Make canvas and set the color
 img = np.zeros((200,400,3),np.uint8)
 b,g,r,a = 255,255,255,0

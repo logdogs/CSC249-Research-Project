@@ -129,5 +129,6 @@ def SSIM(x,y):
     # We can very easily just algebraically manipulate this to have way better (by (big) constant factors)
     #   run times. Right now ain't great, but not tragically bad
     # For the sake of run time (tho it ain't much better), I left out the exponents 
+    print(cld_lookup.recursive_decomposition())
     return (l(x,y) ** (1/2)) * (c(x,y) ** (1/2)) * s(x,y) * g(x,y)
     
