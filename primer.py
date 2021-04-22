@@ -8,6 +8,7 @@ import subprocess
 import decomp_lookup
 import sys
 import comparisons
+import os
 
 # Function to remove the shadows from an image so that our method for finding the character will work
 def remove_shadows(image):
@@ -120,15 +121,14 @@ def run_CNN(input_name,save_name):
 
 
 def main():
-    # args = sys.argv
-    # assert len(args) == 2, "Should run as 'python primer.py <image_of_character>'"
-    # input_name = args[1]
-    # file_name = input_name.split('.')[0]
-    # file_name += "_resized.png"
-    # run_CNN(input_name,file_name)
-    # sigma = convert_for_CNN(input_name)
-    # sigma_prime = imageio.imread("res.png")
-    # comparisons.structural_similarity(sigma,sigma_prime)
-    d = decomp_lookup.decomp_dictionary()
-    print(d.get_components('卡'))
+    args = sys.argv
+    assert len(args) == 2, "Should run as 'python primer.py <image_of_character>'"
+    input_name = args[1]
+    file_name = input_name.split('.')[0]
+    file_name += "_resized.png"
+    run_CNN(input_name,file_name)
+    sigma = convert_for_CNN(input_name)
+    sigma_prime = imageio.imread("res.png")
+    comparisons.structural_similarity(sigma,sigma_prime)
+    os.remove(file_name)
 main()
