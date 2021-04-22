@@ -1,6 +1,29 @@
 import re
 import cld_lookup
 
+"""
+    The decomp_dictionary should only be able to break down the following four types of compositions:
+        1. a (across)
+        2. d (down)
+        3. r (repeat/rotate patterns)
+    
+    It will also make use of the 'ml' pattern to in order to grab a better comparison for radicals that
+        have their form changed when they appear on the left side of a character. This will improve the
+        accuracy of comparisons for segments
+    
+    There are certain surrounding (s) pattern characters which we could absolutely segment, however, the
+        generalizations here make it incredibly difficult to handle this in the general case as some 
+        characters end up requiring that lines be extended or components squished. The line extension
+        is what truly makes it unreasonable, however.
+    
+    It should also be noted that with a and d type compositions, a weighting will be necessary during
+        comparison, and during further analysis (if necessary) we must take into account that the type
+        of stroke may change for components in these types. For example, the verticle stroke in 手
+        becomes curved when it appears as the semantic radical in 看. This problem will need a lot of 
+        thought and careful handling when we're certain that the base cases (single characters) are being
+        handled well by our comparisons.py 
+"""
+
 class decomp_dictionary:
     def __init__(self):
         self.dictionary = dict()
@@ -40,3 +63,8 @@ class decomp_dictionary:
             if len(component) > 1:
                 components.remove(component)
         return components
+    def get_composition_structure(self, character):
+        decomp_data = self.get_decomp_info(character)
+        decomp_data = re.split(r'\(', decomp_data)
+        return decomp_data[0]
+        

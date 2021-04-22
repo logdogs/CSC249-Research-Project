@@ -130,5 +130,6 @@ def main():
     sigma = convert_for_CNN(input_name)
     sigma_prime = imageio.imread("res.png")
     comparisons.structural_similarity(sigma,sigma_prime)
+    
     os.remove(file_name)
 main()

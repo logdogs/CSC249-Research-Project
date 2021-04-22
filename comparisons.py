@@ -3,9 +3,9 @@ from PIL import Image
 import imageio
 import cld_lookup
 import matplotlib.pyplot as plt
-from skimage import data, img_as_float
+from skimage import img_as_float
 from skimage.metrics import structural_similarity as ss
-from skimage.metrics import mean_squared_error
+import decomp_lookup
 
 # First, we need to get both of the images such that all character pixels are the same value, namely 1
 def correct_pixel_vals(character):
@@ -129,6 +129,9 @@ def SSIM(x,y):
     # We can very easily just algebraically manipulate this to have way better (by (big) constant factors)
     #   run times. Right now ain't great, but not tragically bad
     # For the sake of run time (tho it ain't much better), I left out the exponents 
-    print(cld_lookup.recursive_decomposition())
+    file = open('cnn_output_character.txt', 'r', encoding='utf8')
+    character = file.read()
+    d = decomp_lookup.decomp_dictionary()
+    print(d.get_composition_structure(character))
     return (l(x,y) ** (1/2)) * (c(x,y) ** (1/2)) * s(x,y) * g(x,y)
     
