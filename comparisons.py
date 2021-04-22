@@ -16,6 +16,8 @@ def correct_pixel_vals(character):
                 corrected[i,j] = 1
     return corrected
 
+# For data on the results of this:
+#   https://docs.google.com/spreadsheets/d/1C2F6ATsXjz7HA5sOvN5NuVwXconegeas81zqWVPuz3Y/edit?usp=sharing
 def structural_similarity(character, comparison):
     char_arr = np.asarray(character)
     comp_arr = np.asarray(comparison)
@@ -28,11 +30,12 @@ def structural_similarity(character, comparison):
     ssim2 = SSIM(comp_arr, og_comp)
     print(ssim1)
     print(ssim2)
-    plt.figure()
-    plt.imshow(comp_arr,cmap='gray')
-    plt.figure()
-    plt.imshow(og_comp,cmap='gray')
-    plt.show()
+    
+    # plt.figure()
+    # plt.imshow(comp_arr,cmap='gray')
+    # plt.figure()
+    # plt.imshow(og_comp,cmap='gray')
+    # plt.show()
 
 
 # So probably remove the luminocity and contrast calculations from the formulation of SSIM
@@ -132,6 +135,6 @@ def SSIM(x,y):
     file = open('cnn_output_character.txt', 'r', encoding='utf8')
     character = file.read()
     d = decomp_lookup.decomp_dictionary()
-    print(d.get_composition_structure(character))
+    # print(d.get_composition_structure(character))
     return (l(x,y) ** (1/2)) * (c(x,y) ** (1/2)) * s(x,y) * g(x,y)
     
