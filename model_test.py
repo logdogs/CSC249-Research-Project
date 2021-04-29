@@ -162,7 +162,7 @@ img = np.zeros((200,400,3),np.uint8)
 b,g,r,a = 255,255,255,0
 
 ## Use simsum.ttc to write Chinese.
-fontpath = "./simsun.ttc" # <== 这里是宋体路径
+fontpath = "./ARIALUNI.TTF" # <== 这里是宋体路径
 font = ImageFont.truetype(fontpath, 175)
 img_pil = Image.fromarray(img)
 draw = ImageDraw.Draw(img_pil)
