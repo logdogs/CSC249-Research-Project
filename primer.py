@@ -245,5 +245,5 @@ def main():
     axs3.axis('off')
     plt.show()
     # Cleanup the intermediate file created for sigma_prime
-    # os.remove(file_name)
+    os.remove(file_name)
 main()
