@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import PIL.Image as im
 import subprocess
 import sys
+import os
+
+from numpy.core.arrayprint import ComplexFloatingFormat
 import comparisons
 
 # Function to remove the shadows from an image so that our method for finding the character will work
@@ -204,28 +207,31 @@ def main():
     sigma_skel = skeletonize(sigma)
     sigma_prime_skel = skeletonize(sigma_prime)
 
-    "Display the results"
-    fig, ax = plt.subplots(1, 2)
-    ax1, ax2 = ax.ravel()
-    ax1.imshow(sigma, cmap=plt.cm.gray)
-    ax1.set_title('sigma')
-    ax1.axis('off')
-    ax2.imshow(sigma_skel, cmap=plt.cm.gray)
-    ax2.set_title('Skeleton of the image')
-    ax2.axis('off')
-    plt.show()
+    # "Display the results"
+    # fig, ax = plt.subplots(1, 2)
+    # ax1, ax2 = ax.ravel()
+    # ax1.imshow(sigma, cmap=plt.cm.gray)
+    # ax1.set_title('sigma')
+    # ax1.axis('off')
+    # ax2.imshow(sigma_skel, cmap=plt.cm.gray)
+    # ax2.set_title('Skeleton of the image')
+    # ax2.axis('off')
+    # plt.show()
 
-    fig, ax = plt.subplots(1, 2)
-    ax1, ax2 = ax.ravel()
-    ax1.imshow(sigma_prime, cmap=plt.cm.gray)
-    ax1.set_title('sigma_prime')
-    ax1.axis('off')
-    ax2.imshow(sigma_prime_skel, cmap=plt.cm.gray)
-    ax2.set_title('Skeleton of the image')
-    ax2.axis('off')
-    plt.show()
+    # fig, ax = plt.subplots(1, 2)
+    # ax1, ax2 = ax.ravel()
+    # ax1.imshow(sigma_prime, cmap=plt.cm.gray)
+    # ax1.set_title('sigma_prime')
+    # ax1.axis('off')
+    # ax2.imshow(sigma_prime_skel, cmap=plt.cm.gray)
+    # ax2.set_title('Skeleton of the image')
+    # ax2.axis('off')
+    # plt.show()
 
-
-    comparisons.structural_similarity(sigma_skel,sigma_prime_skel)   
-
+    # comparisons.structural_similarity(sigma_skel,sigma_prime_skel)
+    print("g(x) = ", comparisons.g(sigma_skel,sigma_prime_skel))   
+    print("s(x) = ", comparisons.s(sigma_skel,sigma_prime_skel))
+    print("p(x) = ", comparisons.p(sigma_skel,sigma_prime_skel))
+    # Cleanup the intermediate file created for sigma_prime
+    # os.remove(file_name)
 main()

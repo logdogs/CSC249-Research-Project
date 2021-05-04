@@ -18,6 +18,7 @@ def correct_pixel_vals(character):
                 corrected[i,j] = 1
     return corrected
 
+
 # For data on the results of this:
 #   https://docs.google.com/spreadsheets/d/1C2F6ATsXjz7HA5sOvN5NuVwXconegeas81zqWVPuz3Y/edit?usp=sharing
 def structural_similarity(character, comparison):
@@ -105,6 +106,32 @@ def s(x,y):
     c3 = ((0.03) ** 2) /2
     return (sigma_xy + c3)/(sigma_x * sigma_y + c3)
 # The location component from my formalization (g for \Gamma)
+# def g(x,y):
+#     c_1 = []
+#     c_2 = []
+#     for i in range(96):
+#         for j in range(96):
+#             if x[i,j] != 0:
+#                 c_1.append([i,j])
+#             if y[i,j] != 0:
+#                 c_2.append([i,j])
+#     alpha_1 = 1 / len(c_1)
+#     alpha_2 = 1 / len(c_2)
+#     # As per the convention in the file, 's' is short for a sum
+#     s_1 = 0.0
+#     s_2 = 0.0
+#     for pixel in c_1:
+#         s_1 += sum(pixel)
+#     for pixel in c_2:
+#         s_2 += sum(pixel)
+#     s_1 *= alpha_1
+#     s_2 *= alpha_2
+#     return abs(s_1 - s_2)
+
+# SHOULD ALWAYS RETAIN THE SAME PASSING CONVENTION TO g(x,y):
+#    x --> sigma
+#    y --> sigma'
+# I COULD FIX THIS AND SEMI-ENFORCE IT BY CHANGING THE VARIABLE NAMES BUT EH
 def g(x,y):
     c_1 = []
     c_2 = []
@@ -114,132 +141,58 @@ def g(x,y):
                 c_1.append([i,j])
             if y[i,j] != 0:
                 c_2.append([i,j])
-    alpha_1 = 1 / len(c_1)
-    alpha_2 = 1 / len(c_2)
-    # As per the convention in the file, 's' is short for a sum
+    # Sum all location values
+    #   *A location value is simple the sum of the x and y coordinates of a pixel
+    # Return the quotient of s_1 and s_2 (following the naming convention of the formalization), denoted q
+    #   Thus we have a very concrete idea of what the number means:
+    #   0 \leq q \leq 1, where 1 is perfect, 0 and q \approx 0 is terrible
     s_1 = 0.0
     s_2 = 0.0
     for pixel in c_1:
         s_1 += sum(pixel)
     for pixel in c_2:
         s_2 += sum(pixel)
-    s_1 *= alpha_1
-    s_2 *= alpha_2
-    return abs(s_1 - s_2)
-# Again, note that x denotes an image and will assume that only one character is in the image, if you want
-#   it to just get a radical, just pass the trimmed image
-def ombb(x_unpadded):
-    # We must pad the image a bit so we can get an idea about the rotation
-    x = np.zeros((176,176)) # 40 pixels of padding on top and on bottom
-    for i in range(40,96+40):
-        for j in range(40,96+40):
-            i_temp = i - 40
-            j_temp = j - 40
-            x[i,j] = x_unpadded[i-40,j-40]
-    
-    character_points = []
-    for i in range(96):
-        for j in range(96):
-            if x[i,j] != 0:
-                character_points.append([i,j])
-    ch = sp.ConvexHull(character_points)
-    return minBoundingRect(ch.points)
-def minBoundingRect(hull_points_2d):
-    #print "Input convex hull points: "
-    #print hull_points_2d
+    # These normalizations make the values group much tighter for good, okay, and bad
+    # Maybe useful, but I think this makes thresholds harder
+    # alpha_1 = 1 / len(c_1)
+    # alpha_2 = 1 / len(c_2)
+    # s_1 *= alpha_1
+    # s_2 *= alpha_2
+    return min(s_1,s_2)/max(s_1,s_2)
+# Proportion of the frame taken up by the character
+def proportion_taken(x):
+    total_size = 32 * 32
+    to_ret = []
+    base_arr = [[0, 0], [0, 32], [0, 64],
+                [32, 0], [32, 32], [32, 64],
+                [64, 0], [64, 32], [64, 64]]
+    for b in range(len(base_arr)):
+        for i in range(32):
+            poz = 0
+            for j in range(32):
+                if x[i+base_arr[b][0],j+base_arr[b][1]] != 0:
+                    poz += 1
+            
+            to_ret.append(poz / total_size)
 
-    # Compute edges (x2-x1,y2-y1)
-    edges = np.zeros( (len(hull_points_2d)-1,2) ) # empty 2 column array
-    for i in range( len(edges) ):
-        edge_x = hull_points_2d[i+1,0] - hull_points_2d[i,0]
-        edge_y = hull_points_2d[i+1,1] - hull_points_2d[i,1]
-        edges[i] = [edge_x,edge_y]
-    #print "Edges: \n", edges
+    return to_ret
+def p(x,y):
+    prop_x = proportion_taken(x)
+    prop_y = proportion_taken(y)
 
-    # Calculate edge angles   atan2(y/x)
-    edge_angles = np.zeros( (len(edges)) ) # empty 1 column array
-    for i in range( len(edge_angles) ):
-        edge_angles[i] = math.atan2( edges[i,1], edges[i,0] )
-    #print "Edge angles: \n", edge_angles
-
-    # Check for angles in 1st quadrant
-    for i in range( len(edge_angles) ):
-        edge_angles[i] = abs( edge_angles[i] % (math.pi/2) ) # want strictly positive answers
-    #print "Edge angles in 1st Quadrant: \n", edge_angles
-
-    # Remove duplicate angles
-    edge_angles = np.unique(edge_angles)
-    #print "Unique edge angles: \n", edge_angles
-
-    # Test each angle to find bounding box with smallest area
-    min_bbox = (0, float("inf"), 0, 0, 0, 0, 0, 0) # rot_angle, area, width, height, min_x, max_x, min_y, max_y
-    # print( "Testing"), len(edge_angles), "possible rotations for bounding box... \n"
-    for i in range( len(edge_angles) ):
-
-        # Create rotation matrix to shift points to baseline
-        # R = [ cos(theta)      , cos(theta-PI/2)
-        #       cos(theta+PI/2) , cos(theta)     ]
-        R = np.array([ [ math.cos(edge_angles[i]), math.cos(edge_angles[i]-(math.pi/2)) ], [ math.cos(edge_angles[i]+(math.pi/2)), math.cos(edge_angles[i]) ] ])
-        #print "Rotation matrix for ", edge_angles[i], " is \n", R
-
-        # Apply this rotation to convex hull points
-        rot_points = np.dot(R, np.transpose(hull_points_2d) ) # 2x2 * 2xn
-        #print "Rotated hull points are \n", rot_points
-
-        # Find min/max x,y points
-        min_x = np.nanmin(rot_points[0], axis=0)
-        max_x = np.nanmax(rot_points[0], axis=0)
-        min_y = np.nanmin(rot_points[1], axis=0)
-        max_y = np.nanmax(rot_points[1], axis=0)
-        #print "Min x:", min_x, " Max x: ", max_x, "   Min y:", min_y, " Max y: ", max_y
-
-        # Calculate height/width/area of this bounding rectangle
-        width = max_x - min_x
-        height = max_y - min_y
-        area = width*height
-        #print "Potential bounding box ", i, ":  width: ", width, " height: ", height, "  area: ", area 
-
-        # Store the smallest rect found first (a simple convex hull might have 2 answers with same area)
-        if (area < min_bbox[1]):
-            min_bbox = ( edge_angles[i], area, width, height, min_x, max_x, min_y, max_y )
-        # Bypass, return the last found rect
-        #min_bbox = ( edge_angles[i], area, width, height, min_x, max_x, min_y, max_y )
-
-    # Re-create rotation matrix for smallest rect
-    angle = min_bbox[0]   
-    R = np.array([ [ math.cos(angle), math.cos(angle-(math.pi/2)) ], [ math.cos(angle+(math.pi/2)), math.cos(angle) ] ])
-    #print "Projection matrix: \n", R
-
-    # Project convex hull points onto rotated frame
-    proj_points = np.dot(R, np.transpose(hull_points_2d) ) # 2x2 * 2xn
-    #print "Project hull points are \n", proj_points
-
-    # min/max x,y points are against baseline
-    min_x = min_bbox[4]
-    max_x = min_bbox[5]
-    min_y = min_bbox[6]
-    max_y = min_bbox[7]
-    #print "Min x:", min_x, " Max x: ", max_x, "   Min y:", min_y, " Max y: ", max_y
-
-    # Calculate center point and project onto rotated frame
-    center_x = (min_x + max_x)/2
-    center_y = (min_y + max_y)/2
-    center_point = np.dot( [ center_x, center_y ], R )
-    #print "Bounding box center point: \n", center_point
-
-    # Calculate corner points and project onto rotated frame
-    corner_points = np.zeros( (4,2) ) # empty 2 column array
-    corner_points[0] = np.dot( [ max_x, min_y ], R )
-    corner_points[1] = np.dot( [ min_x, min_y ], R )
-    corner_points[2] = np.dot( [ min_x, max_y ], R )
-    corner_points[3] = np.dot( [ max_x, max_y ], R )
-    #print "Bounding box corner points: \n", corner_points
-
-    #print "Angle of rotation: ", angle, "rad  ", angle * (180/math.pi), "deg"
-    for point in corner_points:
-        print (point)
-    print("The rotation angle: " + str(angle))
-    return (angle, min_bbox[1], min_bbox[2], min_bbox[3], center_point, corner_points) # rot_angle, area, width, height, center_point, corner_points
+    # denom = 0
+    # sum = 0
+    # for ind in range(prop_x):
+    #     sum += abs(prop_x[ind] - prop_y[ind])
+    #     denom += 1
+    overall_x = 0.0
+    overall_y = 0.0
+    for i in range(len(prop_x)):
+        # overall += abs((1/9) * prop_x[i] - (1/9) * prop_y[i])
+        overall_x += (1/9) * prop_x[i]
+        overall_y += (1/9) * prop_y[i]
+    return min(overall_x,overall_y) / max(overall_x,overall_y)
+    # return overall
 
 # The moment of truth (not bad! Just... different...)
 def SSIM(x,y):
@@ -253,3 +206,6 @@ def SSIM(x,y):
     character = file.read()
     # return (l(x,y) ** (1/2)) * (c(x,y) ** (1/2)) * s(x,y) * g(x,y)
     return s(x,y) * g(x,y)
+def show_overlay(x,y):
+    
+    return
