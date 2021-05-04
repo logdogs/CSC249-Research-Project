@@ -180,11 +180,6 @@ def p(x,y):
     prop_x = proportion_taken(x)
     prop_y = proportion_taken(y)
 
-    # denom = 0
-    # sum = 0
-    # for ind in range(prop_x):
-    #     sum += abs(prop_x[ind] - prop_y[ind])
-    #     denom += 1
     overall_x = 0.0
     overall_y = 0.0
     for i in range(len(prop_x)):
@@ -206,6 +201,18 @@ def SSIM(x,y):
     character = file.read()
     # return (l(x,y) ** (1/2)) * (c(x,y) ** (1/2)) * s(x,y) * g(x,y)
     return s(x,y) * g(x,y)
-def show_overlay(x,y):
-    
-    return
+def overlay(x,y):
+    # For a given pixel p, if:
+    #   p \in x ^ p \notin y --> p will display as blue
+    #   p \in y ^ p \notin x --> p will display as red
+    #   p \in x ^ p \in y --> p will display as white
+    overlay = np.zeros((96,96,3))
+    for i in range(96):
+        for j in range(96):
+            if x[i,j] != 0 and y[i,j] != 0:
+                overlay[i,j,:] = 255
+            elif x[i,j] == 0 and y[i,j] != 0:
+                overlay[i,j,0] = 255
+            elif x[i,j] != 0 and y[i,j] == 0:
+                overlay[i,j,1] = 255
+    return overlay
