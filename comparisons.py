@@ -8,6 +8,8 @@ from skimage.metrics import structural_similarity as ss
 import decomp_lookup
 import math
 import scipy.spatial as sp
+import radical_segmentation as rs
+import collections
 
 # First, we need to get both of the images such that all character pixels are the same value, namely 1
 def correct_pixel_vals(character):
@@ -216,7 +218,49 @@ def overlay(x,y):
             elif x[i,j] != 0 and y[i,j] == 0:
                 overlay[i,j,1] = 255
     return overlay
+def compare_radical_sizes(x,y):
+    # compare the shape of x and y to see how proportional they've written a given radical
+    # Take x to be from sigma, take y to be from sigma'
+    length_proportion = min(x.shape[0],y.shape[0]) / max(x.shape[0],y.shape[0])
+    height_proportion = min(x.shape[1],y.shape[1]) / max(x.shape[1],y.shape[1])
+    
 # Compare a character and it's printed version: sigma : sigma'
 # Two cases for sigma/sigma':
 #   1) Base case: 1 Component, no segmentation
 #   2) Inductive case:  > 1 component, so segmentation
+def compare(sigma,sigma_prime):
+    sigma_seg = rs.segment(sigma)
+    sigma_prime_seg = rs.segment(sigma_prime)
+    
+    overall_p_val = p(sigma,sigma_prime)
+    overall_s_val = s(sigma,sigma_prime)
+    overall_g_val = g(sigma,sigma_prime)
+    print("p = ",overall_p_val,"\ns = ",overall_s_val, "\ng = ",overall_g_val)
+    if len(sigma_seg) > 1: # case 2
+        component_pairs = []
+        for i in range(len(sigma_seg)):
+            component_pairs.append((sigma_seg[i],sigma_prime_seg[i]))
+        # component_comp_vals = collections.defaultdict(tuple)
+        component_comp_vals = []
+        for pair in component_pairs:
+            # Recall that pair[0] is always simga, and pair[1] is always sigma'
+            # We will have component_comp_vals have list always of the form [p,s,g]
+            # component_comp_vals[pair] = [p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))]
+            component_comp_vals.append([p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))])
+        for i in range(len(component_pairs)):
+            pair = component_pairs[i]
+            sigma_skel = np.asarray(pair[0])
+            sigma_prime_skel = np.asarray(pair[1])
+            fig,axs = plt.subplots(1,3)
+            axs1,axs2,axs3 = axs.ravel()
+            axs1.imshow(sigma_skel,cmap='gray')
+            axs1.set_title('sigma_skel')
+            axs1.axis('off')
+            axs2.imshow(sigma_prime_skel,cmap='gray')
+            axs2.set_title('sigma_prime_skel')
+            axs2.axis('off')
+            axs3.imshow(overlay(sigma_skel,sigma_prime_skel))
+            axs3.set_title(str(component_comp_vals[i]))
+            axs3.axis('off')
+            plt.show()
+        print(component_comp_vals)

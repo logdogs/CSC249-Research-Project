@@ -8,6 +8,7 @@ import subprocess
 import sys
 import os
 import radical_segmentation as rs
+import scipy.ndimage as nd
 
 from numpy.core.arrayprint import ComplexFloatingFormat
 import comparisons
@@ -230,28 +231,49 @@ def main():
     # plt.show()
 
     # comparisons.structural_similarity(sigma_skel,sigma_prime_skel)
-    print("g(x) = ", comparisons.g(sigma_skel,sigma_prime_skel))   
-    print("s(x) = ", comparisons.s(sigma_skel,sigma_prime_skel))
-    print("p(x) = ", comparisons.p(sigma_skel,sigma_prime_skel))
-    fig,axs = plt.subplots(1,3)
-    axs1,axs2,axs3 = axs.ravel()
-    axs1.imshow(sigma_skel,cmap='gray')
-    axs1.set_title('sigma_skel')
-    axs1.axis('off')
-    axs2.imshow(sigma_prime_skel,cmap='gray')
-    axs2.set_title('sigma_prime_skel')
-    axs2.axis('off')
-    axs3.imshow(comparisons.overlay(sigma_skel,sigma_prime_skel))
-    axs3.set_title('overlay')
-    axs3.axis('off')
+    # print("g(x) = ", comparisons.g(sigma_skel,sigma_prime_skel))   
+    # print("s(x) = ", comparisons.s(sigma_skel,sigma_prime_skel))
+    # print("p(x) = ", comparisons.p(sigma_skel,sigma_prime_skel))
+    
+    
+    # comparisons.compare(sigma_skel,sigma_prime_skel)
+    
+    # sigma_prime_skel = nd.gaussian_filter(sigma_prime_skel, 5)
+    # print(sigma_prime_skel.shape)
+    # threshold = np.median(sigma_prime_skel)
+    # print(type(sigma_prime_skel[0,0]))
+    # for i in range(96):
+    #     for j in range(96):
+    #         if sigma_prime_skel[j,i] < threshold:
+    #             sigma_prime_skel[i,j] = 255
+    #         else:
+    #             sigma_prime_skel[i,j] = 0
+    plt.figure()
+    plt.imshow(sigma_prime,cmap='gray')
+    plt.figure()
+    plt.imshow(sigma_prime_skel,cmap='gray')
     plt.show()
+
+    # fig,axs = plt.subplots(1,3)
+    # axs1,axs2,axs3 = axs.ravel()
+    # axs1.imshow(sigma_skel,cmap='gray')
+    # axs1.set_title('sigma_skel')
+    # axs1.axis('off')
+    # axs2.imshow(sigma_prime_skel,cmap='gray')
+    # axs2.set_title('sigma_prime_skel')
+    # axs2.axis('off')
+    # axs3.imshow(comparisons.overlay(sigma_skel,sigma_prime_skel))
+    # axs3.set_title('overlay')
+    # axs3.axis('off')
+    # plt.show()
     # comparisons.structural_similarity(sigma_skel,sigma_prime_skel)
     sigma_seg = rs.segment(im.fromarray(sigma_skel))
     sigma_prime_seg = rs.segment(im.fromarray(sigma_prime_skel))
     
     for i in sigma_seg:
         i.show()
-
+    for i in sigma_prime_seg:
+        i.show()
     # Cleanup the intermediate file created for sigma_prime
     os.remove(file_name)
 main()
