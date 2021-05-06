@@ -7,6 +7,7 @@ import PIL.Image as im
 import subprocess
 import sys
 import os
+import radical_segmentation as rs
 
 from numpy.core.arrayprint import ComplexFloatingFormat
 import comparisons
@@ -244,6 +245,13 @@ def main():
     axs3.set_title('overlay')
     axs3.axis('off')
     plt.show()
+    # comparisons.structural_similarity(sigma_skel,sigma_prime_skel)
+    sigma_seg = rs.segment(im.fromarray(sigma_skel))
+    sigma_prime_seg = rs.segment(im.fromarray(sigma_prime_skel))
+    
+    for i in sigma_seg:
+        i.show()
+
     # Cleanup the intermediate file created for sigma_prime
     os.remove(file_name)
 main()

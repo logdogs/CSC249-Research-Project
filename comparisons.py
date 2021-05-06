@@ -216,3 +216,7 @@ def overlay(x,y):
             elif x[i,j] != 0 and y[i,j] == 0:
                 overlay[i,j,1] = 255
     return overlay
+# Compare a character and it's printed version: sigma : sigma'
+# Two cases for sigma/sigma':
+#   1) Base case: 1 Component, no segmentation
+#   2) Inductive case:  > 1 component, so segmentation
