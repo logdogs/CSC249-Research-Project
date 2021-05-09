@@ -295,4 +295,5 @@ def compare(sigma,sigma_prime):
     print("p -", overall_p_val)
     print("s -", overall_s_val)
     print("g -", overall_g_val)
+    return overall_p_val, overall_s_val, overall_g_val
         

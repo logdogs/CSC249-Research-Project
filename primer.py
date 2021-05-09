@@ -102,6 +102,7 @@ def bound_image(bin_image):
 
 # Will give you the resized and properly formatted version of the original image based on the filename
 def convert_for_CNN(image_name):
+    print(image_name)
     image = imageio.imread(image_name)
     gray = grayscale(image)
     avg_d,darkest = get_avg_and_darkest(gray)
@@ -210,6 +211,38 @@ def clean_image(image):
                 cleaned[i,j] = 0
     return cleaned
 
+
+def run(file):
+    #args = sys.argv
+    #assert len(args) == 2, "Should run as 'python primer.py <image_of_character>'"
+    #input_name = args[1]
+    #file_name = input_name.split('.')[0]
+    file_name = file.split('.')[0]
+    file_name += "_resized.png"
+    # run_CNN(input_name,file_name)
+    # sigma = convert_for_CNN(input_name)
+    run_CNN(file,file_name)
+    sigma = convert_for_CNN(file)
+    sigma_prime = imageio.imread("res.png")
+
+    # sigma_skel = clean_image(skeletonize(sigma))
+    # sigma_prime_skel = clean_image(skeletonize(sigma_prime))
+    sigma_skel = skeletonize(sigma)
+    sigma_prime_skel = skeletonize(sigma_prime)
+    
+    
+    
+    p, s, g = comparisons.compare(sigma_skel,sigma_prime_skel)
+    file = open('cnn_output_character.txt', 'r', encoding='utf8')
+    character = file.read()
+
+    os.remove(file_name)
+
+    return p, s, g, character
+
+
+
+
 def main():
     args = sys.argv
     assert len(args) == 2, "Should run as 'python primer.py <image_of_character>'"
@@ -281,4 +314,4 @@ def main():
     #     i.show()
     # Cleanup the intermediate file created for sigma_prime
     os.remove(file_name)
-main()
+#main()
