@@ -175,7 +175,8 @@ def proportion_taken(x):
                 if x[i+base_arr[b][0],j+base_arr[b][1]] != 0:
                     poz += 1
             
-            to_ret.append(poz / total_size)
+            # to_ret.append(poz / total_size)
+            to_ret.append(poz)
 
     return to_ret
 def p(x,y):
@@ -186,8 +187,10 @@ def p(x,y):
     overall_y = 0.0
     for i in range(len(prop_x)):
         # overall += abs((1/9) * prop_x[i] - (1/9) * prop_y[i])
-        overall_x += (1/9) * prop_x[i]
-        overall_y += (1/9) * prop_y[i]
+        # overall_x += (1/9) * prop_x[i]
+        # overall_y += (1/9) * prop_y[i]
+        overall_x += prop_x[i]
+        overall_y += prop_y[i]
     return min(overall_x,overall_y) / max(overall_x,overall_y)
     # return overall
 
