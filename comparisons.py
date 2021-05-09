@@ -223,7 +223,22 @@ def compare_radical_sizes(x,y):
     # Take x to be from sigma, take y to be from sigma'
     length_proportion = min(x.shape[0],y.shape[0]) / max(x.shape[0],y.shape[0])
     height_proportion = min(x.shape[1],y.shape[1]) / max(x.shape[1],y.shape[1])
-    
+
+# Get the weight for a component of a multi-component character
+# In the formalization the names are exactly the same 
+def get_alpha(Gamma_before, delta_before):
+    # 'card' is short for cardinality
+    Gamma = np.asarray(Gamma_before)
+    delta = np.asarray(delta_before)
+    Gamma_card = 0
+    delta_card = 0
+    for i in range(96):
+        for j in range(96):
+            if Gamma[i,j] != 0:
+                Gamma_card += 1
+            if delta[i,j] != 0:
+                delta_card += 1
+    return delta_card / Gamma_card
 # Compare a character and it's printed version: sigma : sigma'
 # Two cases for sigma/sigma':
 #   1) Base case: 1 Component, no segmentation
@@ -232,35 +247,52 @@ def compare(sigma,sigma_prime):
     sigma_seg = rs.segment(sigma)
     sigma_prime_seg = rs.segment(sigma_prime)
     
-    overall_p_val = p(sigma,sigma_prime)
-    overall_s_val = s(sigma,sigma_prime)
-    overall_g_val = g(sigma,sigma_prime)
-    print("p = ",overall_p_val,"\ns = ",overall_s_val, "\ng = ",overall_g_val)
     if len(sigma_seg) > 1: # case 2
         component_pairs = []
         for i in range(len(sigma_seg)):
             component_pairs.append((sigma_seg[i],sigma_prime_seg[i]))
         # component_comp_vals = collections.defaultdict(tuple)
         component_comp_vals = []
+        # component_comp_vals = collections.defaultdict(tuple)
         for pair in component_pairs:
             # Recall that pair[0] is always simga, and pair[1] is always sigma'
             # We will have component_comp_vals have list always of the form [p,s,g]
             # component_comp_vals[pair] = [p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))]
-            component_comp_vals.append([p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))])
-        for i in range(len(component_pairs)):
-            pair = component_pairs[i]
-            sigma_skel = np.asarray(pair[0])
-            sigma_prime_skel = np.asarray(pair[1])
-            fig,axs = plt.subplots(1,3)
-            axs1,axs2,axs3 = axs.ravel()
-            axs1.imshow(sigma_skel,cmap='gray')
-            axs1.set_title('sigma_skel')
-            axs1.axis('off')
-            axs2.imshow(sigma_prime_skel,cmap='gray')
-            axs2.set_title('sigma_prime_skel')
-            axs2.axis('off')
-            axs3.imshow(overlay(sigma_skel,sigma_prime_skel))
-            axs3.set_title(str(component_comp_vals[i]))
-            axs3.axis('off')
-            plt.show()
-        print(component_comp_vals)
+            component_comp_vals.append([list(pair)[0], list(pair)[1], p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))])
+            #key_tuple = (list(pair)[0], list(pair)[1])
+            #component_comp_vals[key_tuple] = [p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))]
+        
+        # for i in range(len(component_pairs)):
+        #     pair = component_pairs[i]
+        #     sigma_skel = np.asarray(pair[0])
+        #     sigma_prime_skel = np.asarray(pair[1])
+        #     fig,axs = plt.subplots(1,3)
+        #     axs1,axs2,axs3 = axs.ravel()
+        #     axs1.imshow(sigma_skel,cmap='gray')
+        #     axs1.set_title('sigma_skel') 
+        #     axs1.axis('off')
+        #     axs2.imshow(sigma_prime_skel,cmap='gray')
+        #     axs2.set_title('sigma_prime_skel')
+        #     axs2.axis('off')
+        #     axs3.imshow(overlay(sigma_skel,sigma_prime_skel))
+        #     axs3.set_title(str(component_comp_vals[i]))
+        #     axs3.axis('off')
+        #     plt.show()
+        # print(component_comp_vals)
+        overall_p_val = 0.0
+        overall_s_val = 0.0
+        overall_g_val = 0.0
+        #for keys, vals in component_comp_vals.items():
+        for vals in component_comp_vals:
+            alpha = get_alpha(sigma, vals[0])
+            overall_p_val += vals[2] * alpha
+            overall_s_val += vals[3] * alpha
+            overall_g_val += vals[4] * alpha
+    else:
+        overall_p_val = p(sigma,sigma_prime)
+        overall_s_val = s(sigma,sigma_prime)
+        overall_g_val = g(sigma,sigma_prime)
+    print("p -", overall_p_val)
+    print("s -", overall_s_val)
+    print("g -", overall_g_val)
+        

@@ -196,6 +196,20 @@ def skeletonize(image):
             break
     return skel
 
+def has_adjacent_character_pixel(image,x,y):
+    if image[x-1,y] != 0 or image[x,y-1] != 0 or image[x-1,y-1] != 0 or image[x+1,y] != 0 or image[x,y+1] != 0 or image[x+1,y+1] != 0:
+        return True
+    else:
+        return False
+
+def clean_image(image):
+    cleaned = np.copy(image)
+    for i in range(1,95):
+        for j in range(1,95):
+            if not has_adjacent_character_pixel(image,i,j):
+                cleaned[i,j] = 0
+    return cleaned
+
 def main():
     args = sys.argv
     assert len(args) == 2, "Should run as 'python primer.py <image_of_character>'"
@@ -206,9 +220,10 @@ def main():
     sigma = convert_for_CNN(input_name)
     sigma_prime = imageio.imread("res.png")
 
+    # sigma_skel = clean_image(skeletonize(sigma))
+    # sigma_prime_skel = clean_image(skeletonize(sigma_prime))
     sigma_skel = skeletonize(sigma)
     sigma_prime_skel = skeletonize(sigma_prime)
-
     # "Display the results"
     # fig, ax = plt.subplots(1, 2)
     # ax1, ax2 = ax.ravel()
@@ -236,23 +251,13 @@ def main():
     # print("p(x) = ", comparisons.p(sigma_skel,sigma_prime_skel))
     
     
-    # comparisons.compare(sigma_skel,sigma_prime_skel)
+    comparisons.compare(sigma_skel,sigma_prime_skel)
     
-    # sigma_prime_skel = nd.gaussian_filter(sigma_prime_skel, 5)
-    # print(sigma_prime_skel.shape)
-    # threshold = np.median(sigma_prime_skel)
-    # print(type(sigma_prime_skel[0,0]))
-    # for i in range(96):
-    #     for j in range(96):
-    #         if sigma_prime_skel[j,i] < threshold:
-    #             sigma_prime_skel[i,j] = 255
-    #         else:
-    #             sigma_prime_skel[i,j] = 0
-    plt.figure()
-    plt.imshow(sigma_prime,cmap='gray')
-    plt.figure()
-    plt.imshow(sigma_prime_skel,cmap='gray')
-    plt.show()
+    # plt.figure()
+    # plt.imshow(sigma_prime,cmap='gray')
+    # plt.figure()
+    # plt.imshow(sigma_prime_skel,cmap='gray')
+    # plt.show()
 
     # fig,axs = plt.subplots(1,3)
     # axs1,axs2,axs3 = axs.ravel()
@@ -267,13 +272,13 @@ def main():
     # axs3.axis('off')
     # plt.show()
     # comparisons.structural_similarity(sigma_skel,sigma_prime_skel)
-    sigma_seg = rs.segment(im.fromarray(sigma_skel))
-    sigma_prime_seg = rs.segment(im.fromarray(sigma_prime_skel))
+    # sigma_seg = rs.segment(im.fromarray(sigma_skel))
+    # sigma_prime_seg = rs.segment(im.fromarray(sigma_prime_skel))
     
-    for i in sigma_seg:
-        i.show()
-    for i in sigma_prime_seg:
-        i.show()
+    # for i in sigma_seg:
+    #     i.show()
+    # for i in sigma_prime_seg:
+    #     i.show()
     # Cleanup the intermediate file created for sigma_prime
     os.remove(file_name)
 main()

@@ -4,16 +4,18 @@ from PIL import Image
 import imageio
 import os
 import math
-# Finds longest continuous subsequence in array
+
+
+#Finds longest continuous subsequence in array
 def longest_run(arr):
     longest_run = []
     current_run = []
 
-    for x in arr:
+    for x in reversed(arr):
         if len(current_run) == 0:
             current_run.append(x)
         else:
-            if x == current_run[len(current_run) - 1] + 1:
+            if x == current_run[len(current_run) - 1] - 1:
                 current_run.append(x)
             else:
                 if len(current_run) > len(longest_run):
@@ -28,16 +30,73 @@ def longest_run(arr):
     return longest_run
 
 
+def bound_image(bin_image):
+    max_x = 0
+    max_y = 0
+    min_x = 10000000
+    min_y = 10000000
+    for i in range(bin_image.shape[0]):
+        for j in range(bin_image.shape[1]):
+            if bin_image[i,j] > 0:
+                if i > max_x:
+                    max_x = i
+                if i < min_x:
+                    min_x = i
+                if j > max_y:
+                    max_y = j
+                if j < min_y:
+                    min_y = j
+    image_prime = bin_image[min_x:max_x, min_y:max_y]
+    return image_prime
+
+def get_lowest_point(data):
+    for i in reversed(range(data.shape[0])):
+        for j in range(data.shape[1]):
+            if data[i,j] != 0:
+                #print("Found lowest - ", i)
+                return i
+
+def get_highest_point(data):
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            if data[i,j] != 0:
+                #print("Found highest - ", i)
+                return i
+
+def get_left_point(data):
+    for j in range(data.shape[1]):
+        for i in range(data.shape[0]):
+            if data[i,j] != 0:
+                #print("Found left - ", j)
+                return j
+
+def get_right_point(data):
+    for j in reversed(range(data.shape[1])):
+        for i in range(data.shape[0]):
+            if data[i,j] != 0:
+                #print("Found right - ", j)
+                return j
+
+
 # Finds best column to segment top-down oriented radical
 def down(image, orientation):
     row_vals = {}
     data = np.asarray(image)
+    #data = bound_image(data)
     height = data.shape[0]
     width = data.shape[1]
-    lower_bound = int(.2 * height) 
-    upper_bound = int(.8 * height) 
+    #lower_bound = int(.15 * height) 
+    #upper_bound = int(.85 * height) 
+
+    highest = get_highest_point(data)
+    lowest = get_lowest_point(data)
+    adjusted_height = lowest - highest
+    lower_bound = int(.15 * adjusted_height + highest) 
+    upper_bound = int(.85 * adjusted_height + highest) 
     if orientation == "b":
-        lower_bound = int(.5 * height)
+        upper_bound = int(.5 * adjusted_height + highest)
+    if orientation == "t":
+        lower_bound = int(.5 * adjusted_height + highest)
     for x in range(height):
         count = 0
         if x > lower_bound and x < upper_bound:
@@ -45,12 +104,11 @@ def down(image, orientation):
                 if data[x][y] > 0:
                     count += 1
             row_vals[x] = count
-
     temp = min(row_vals.values())
+    #print("temp",temp)
     res = [key for key in row_vals if row_vals[key] == temp]
-
+    #print("res", res)
     longest = longest_run(res)
-
     average = sum(longest) / len(longest)
     
     #top = image.crop((0, 0, width, average))
@@ -65,13 +123,21 @@ def down(image, orientation):
 def across(image, orientation):
     col_vals = {}
     data = np.asarray(image)
+    #data = bound_image(data)
     height = data.shape[0]
     width = data.shape[1]
 
-    lower_bound = int(.2 * height) 
-    upper_bound = int(.8 * height) 
+    # lower_bound = int(.2 * width) 
+    # upper_bound = int(.8 * width) 
+    left_most = get_left_point(data)
+    right_most = get_right_point(data)
+    adjusted_width = right_most-left_most
+    lower_bound = int(.2 * adjusted_width + left_most) 
+    upper_bound = int(.8 * adjusted_width + left_most) 
     if orientation == "l":
-        upper_bound = int(.5 * height)
+        upper_bound = int(0.5 * adjusted_width + left_most(data))
+    if orientation == "r":
+        lower_bound = int(0.5 * adjusted_width + left_most)
     for x in range(width):
         count = 0
         if x > lower_bound and x < upper_bound:
@@ -194,16 +260,18 @@ def isolate(x, bounds_list):
     return isolated_list
 
 def run(image, character, display_bool, final_list):
-    possibilities = "dacsw"
+    possibilities = "das"
     d = dl.decomp_dictionary()
-    # print(character)
-    # print("comp structure", d.get_composition_structure(character))
+    #print(character)
+    #print("comp structure", d.get_composition_structure(character))
     strucutre = d.get_composition_structure(character)
     if strucutre[0] in possibilities:
         components = d.get_components(character)
         # print(components)
         if len(components) > 1:
             if strucutre == "d": #down
+                top_char = components[0]
+                bottom_char = components[1]
                 top, bottom = down(image, "n") #top/bottom dims
                 isolated_components = isolate(image,[top,bottom])
                 top = isolated_components[0]
@@ -213,8 +281,8 @@ def run(image, character, display_bool, final_list):
 
                 display(top, display_bool)
                 display(bottom, display_bool)
-                t = run(top, components[0], display_bool, final_list)
-                b = run(bottom, components[1], display_bool, final_list)
+                t = run(top, top_char, display_bool, final_list)
+                b = run(bottom, bottom_char, display_bool, final_list)
                 #return [t, b]
             
             if strucutre == "a": #across
