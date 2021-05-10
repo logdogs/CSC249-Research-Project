@@ -46,13 +46,14 @@ for f in sorted(files, key=str.lower):
         sheet1.write(counter, name_col, name)
         sheet1.write(counter, quality_col, quality)
         sheet1.write(counter, cnn_char_col, cnn_char)
-        sheet1.write(counter, p_col, p)
+        sheet1.write(counter, p_col, float(p))
         sheet1.write(counter, s_col, s)
         sheet1.write(counter, g_col, g)
 
         counter +=1
-        if counter == 50:
-            break
+        #if counter == 50:
+        #    break
+        wb.save('Handwriting Output.xls')
 
 
   
