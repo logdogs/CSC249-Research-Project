@@ -284,7 +284,8 @@ def main():
     # print("p(x) = ", comparisons.p(sigma_skel,sigma_prime_skel))
     
     
-    comparisons.compare(sigma_skel,sigma_prime_skel)
+    # comparisons.compare(sigma_skel,sigma_prime_skel)
+    print("p == ",comparisons.p(sigma_skel, sigma_prime_skel))
     
     # plt.figure()
     # plt.imshow(sigma_prime,cmap='gray')

@@ -175,8 +175,8 @@ def proportion_taken(x):
                 if x[i+base_arr[b][0],j+base_arr[b][1]] != 0:
                     poz += 1
             
-            # to_ret.append(poz / total_size)
-            to_ret.append(poz)
+        to_ret.append(poz / (32 * 32))
+            # to_ret.append(poz)
 
     return to_ret
 def p(x,y):
@@ -186,14 +186,25 @@ def p(x,y):
     overall_x = 0.0
     overall_y = 0.0
     for i in range(len(prop_x)):
-        # overall += abs((1/9) * prop_x[i] - (1/9) * prop_y[i])
-        # overall_x += (1/9) * prop_x[i]
-        # overall_y += (1/9) * prop_y[i]
-        overall_x += prop_x[i]
-        overall_y += prop_y[i]
+        overall_x += (1/9) * prop_x[i]
+        overall_y += (1/9) * prop_y[i]
     return min(overall_x,overall_y) / max(overall_x,overall_y)
-    # return overall
+    return overall
 
+    # metric = 0.0
+    # comp_vect = []
+    # for i in range(len(prop_x)):
+    #     if prop_x[i] == 0 and prop_y[i] == 0:
+    #         comp_vect.append(1)
+    #     elif prop_x[i] == 0 and prop_y[i] != 0:
+    #         comp_vect.append(0)
+    #     elif prop_x[i] != 0 and prop_y[i] == 0:
+    #         comp_vect.append(0)
+    #     else:
+    #         comp_vect.append(min(prop_x[i],prop_y[i])/max(prop_x[i],prop_y[i]))
+    # print(comp_vect)
+    # print(len(comp_vect))
+    # return comp_vect
 # The moment of truth (not bad! Just... different...)
 def SSIM(x,y):
     # I'm not doing the simplified form for a very definitive reason
