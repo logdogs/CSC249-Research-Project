@@ -11,8 +11,8 @@ sheet1 = wb.add_sheet('Sheet 1')
   
 
 
-path = 'C:/Users/dband/Documents/handwritten_character_examples/'
-
+#path = 'C:/Users/dband/Documents/handwritten_character_examples/'
+path = "handwritten_character_examples/"
 files = os.listdir(path)
 
 name_col = 0
@@ -36,7 +36,8 @@ for f in sorted(files, key=str.lower):
     
 
     filename, ending = f.split(".")
-    
+    print(filename)
+    print(ending)
     if (ending == "png" or ending == "jpeg" or ending == "jpg"):
         name, quality = filename.split("_")
         p, s, g, cnn_char = prm.run(path+f)
@@ -50,7 +51,7 @@ for f in sorted(files, key=str.lower):
         sheet1.write(counter, g_col, g)
 
         counter +=1
-        if counter == 139:
+        if counter == 50:
             break
 
 

@@ -262,10 +262,10 @@ def isolate(x, bounds_list):
 def run(image, character, display_bool, final_list):
     possibilities = "das"
     d = dl.decomp_dictionary()
-    #print(character)
-    #print("comp structure", d.get_composition_structure(character))
+    print(character)
+    print("comp structure", d.get_composition_structure(character))
     strucutre = d.get_composition_structure(character)
-    if strucutre[0] in possibilities:
+    if character != '𧰨' and strucutre[0] in possibilities:
         components = d.get_components(character)
         # print(components)
         if len(components) > 1:
@@ -300,15 +300,16 @@ def run(image, character, display_bool, final_list):
 
             if strucutre[0] == "s": #surround
                 if strucutre[1] is not None:
-                    s = s_surround(image, strucutre[1], strucutre[2]) #inner dims
-                    # inner = image.crop(s)
-                    inner = isolate(image,[s])
-                    display(inner, display_bool)
-                    outer = remove(image, s)
-                    display(outer, display_bool)
-                    o = run(outer, components[0], display_bool, final_list)
-                    s = run(s, components[1], display_bool, final_list)
-                    #return [o, s]
+                    if structure[2] is not None:
+                        s = s_surround(image, strucutre[1], strucutre[2]) #inner dims
+                        # inner = image.crop(s)
+                        inner = isolate(image,[s])
+                        display(inner, display_bool)
+                        outer = remove(image, s)
+                        display(outer, display_bool)
+                        o = run(outer, components[0], display_bool, final_list)
+                        s = run(s, components[1], display_bool, final_list)
+                        #return [o, s]
                 else: #equivalent to withtin
                     w = w_contained(image)
                     # inner = image.crop(w)
