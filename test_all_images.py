@@ -11,7 +11,7 @@ sheet1 = wb.add_sheet('Sheet 1')
   
 
 
-path = 'handwritten_character_examples/'
+path = 'C:/Users/dband/Documents/handwritten_character_examples/'
 
 files = os.listdir(path)
 
@@ -50,7 +50,7 @@ for f in sorted(files, key=str.lower):
         sheet1.write(counter, g_col, g)
 
         counter +=1
-        if counter == 20:
+        if counter == 139:
             break
 
 
