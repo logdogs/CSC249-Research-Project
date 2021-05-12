@@ -1,15 +1,10 @@
 import numpy as np
 from PIL import Image
 import imageio
-import cld_lookup
 import matplotlib.pyplot as plt
 from skimage import img_as_float
 from skimage.metrics import structural_similarity as ss
-import decomp_lookup
-import math
-import scipy.spatial as sp
 import radical_segmentation as rs
-import collections
 
 # First, we need to get both of the images such that all character pixels are the same value, namely 1
 def correct_pixel_vals(character):
@@ -189,7 +184,6 @@ def p(x,y):
         overall_x += (1/9) * prop_x[i]
         overall_y += (1/9) * prop_y[i]
     return min(overall_x,overall_y) / max(overall_x,overall_y)
-    return overall
 
     # metric = 0.0
     # comp_vect = []
@@ -253,6 +247,7 @@ def get_alpha(Gamma_before, delta_before):
             if delta[i,j] != 0:
                 delta_card += 1
     return delta_card / Gamma_card
+
 # Compare a character and it's printed version: sigma : sigma'
 # Two cases for sigma/sigma':
 #   1) Base case: 1 Component, no segmentation
@@ -261,6 +256,8 @@ def compare(sigma,sigma_prime):
     sigma_seg = rs.segment(sigma)
     sigma_prime_seg = rs.segment(sigma_prime)
     
+    sigma_seg[0].show()
+
     if len(sigma_seg) > 1: # case 2
         component_pairs = []
         for i in range(len(sigma_seg)):
@@ -273,26 +270,7 @@ def compare(sigma,sigma_prime):
             # We will have component_comp_vals have list always of the form [p,s,g]
             # component_comp_vals[pair] = [p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))]
             component_comp_vals.append([list(pair)[0], list(pair)[1], p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))])
-            #key_tuple = (list(pair)[0], list(pair)[1])
-            #component_comp_vals[key_tuple] = [p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))]
-        
-        # for i in range(len(component_pairs)):
-        #     pair = component_pairs[i]
-        #     sigma_skel = np.asarray(pair[0])
-        #     sigma_prime_skel = np.asarray(pair[1])
-        #     fig,axs = plt.subplots(1,3)
-        #     axs1,axs2,axs3 = axs.ravel()
-        #     axs1.imshow(sigma_skel,cmap='gray')
-        #     axs1.set_title('sigma_skel') 
-        #     axs1.axis('off')
-        #     axs2.imshow(sigma_prime_skel,cmap='gray')
-        #     axs2.set_title('sigma_prime_skel')
-        #     axs2.axis('off')
-        #     axs3.imshow(overlay(sigma_skel,sigma_prime_skel))
-        #     axs3.set_title(str(component_comp_vals[i]))
-        #     axs3.axis('off')
-        #     plt.show()
-        # print(component_comp_vals)
+
         overall_p_val = 0.0
         overall_s_val = 0.0
         overall_g_val = 0.0
@@ -302,7 +280,7 @@ def compare(sigma,sigma_prime):
             overall_p_val += vals[2] * alpha
             overall_s_val += vals[3] * alpha
             overall_g_val += vals[4] * alpha
-    else:
+    else: # Case 1
         overall_p_val = p(sigma,sigma_prime)
         overall_s_val = s(sigma,sigma_prime)
         overall_g_val = g(sigma,sigma_prime)

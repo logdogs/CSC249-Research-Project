@@ -53,28 +53,24 @@ def get_lowest_point(data):
     for i in reversed(range(data.shape[0])):
         for j in range(data.shape[1]):
             if data[i,j] != 0:
-                #print("Found lowest - ", i)
                 return i
 
 def get_highest_point(data):
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
             if data[i,j] != 0:
-                #print("Found highest - ", i)
                 return i
 
 def get_left_point(data):
     for j in range(data.shape[1]):
         for i in range(data.shape[0]):
             if data[i,j] != 0:
-                #print("Found left - ", j)
                 return j
 
 def get_right_point(data):
     for j in reversed(range(data.shape[1])):
         for i in range(data.shape[0]):
             if data[i,j] != 0:
-                #print("Found right - ", j)
                 return j
 
 
@@ -82,11 +78,8 @@ def get_right_point(data):
 def down(image, orientation):
     row_vals = {}
     data = np.asarray(image)
-    #data = bound_image(data)
     height = data.shape[0]
     width = data.shape[1]
-    #lower_bound = int(.15 * height) 
-    #upper_bound = int(.85 * height) 
 
     highest = get_highest_point(data)
     lowest = get_lowest_point(data)
@@ -105,16 +98,12 @@ def down(image, orientation):
                     count += 1
             row_vals[x] = count
     temp = min(row_vals.values())
-    #print("temp",temp)
     res = [key for key in row_vals if row_vals[key] == temp]
-    #print("res", res)
     longest = longest_run(res)
     average = sum(longest) / len(longest)
     
-    #top = image.crop((0, 0, width, average))
     top = (0, 0, width, average)
 
-    #bottom = image.crop((0, average, width, height))
     bottom = (0, average, width, height)
 
     return top, bottom
@@ -123,12 +112,9 @@ def down(image, orientation):
 def across(image, orientation):
     col_vals = {}
     data = np.asarray(image)
-    #data = bound_image(data)
     height = data.shape[0]
     width = data.shape[1]
 
-    # lower_bound = int(.2 * width) 
-    # upper_bound = int(.8 * width) 
     left_most = get_left_point(data)
     right_most = get_right_point(data)
     adjusted_width = right_most-left_most
@@ -152,9 +138,6 @@ def across(image, orientation):
     longest = longest_run(res)
 
     average = sum(longest) / len(longest)
-    
-    # left = image.crop((0, 0, average, height))
-    # right = image.crop((average, 0, width, height))
 
     left = (0, 0, average, height)
     right = (average, 0, width, height)
@@ -184,7 +167,6 @@ def s_surround(image, ud_orientation, lr_orientation):
         l = right[2]
         r = right[0]
 
-    #dims = (right[0], 0, right[2], top[3])
     dims = (l, u, r, d)
     return dims
 
@@ -214,8 +196,6 @@ def remove(img, dims):
     # Creating an image out of the previously modified array
     img = Image.fromarray(img_arr)
     
-    # Displaying the image
-    #img.show()
     return img
 
 def display(image, display_bool):
@@ -255,19 +235,16 @@ def isolate(x, bounds_list):
         isolated_list.append(res1)
         isolated_list.append(res2)
     else:
-        print("SHIT")
+        print("uhoh")
         os.exit()
     return isolated_list
 
 def run(image, character, display_bool, final_list):
     possibilities = "das"
     d = dl.decomp_dictionary()
-    print(character)
-    print("comp structure", d.get_composition_structure(character))
     strucutre = d.get_composition_structure(character)
     if character != '𧰨' and strucutre[0] in possibilities:
         components = d.get_components(character)
-        # print(components)
         if len(components) > 1:
             if strucutre == "d": #down
                 top_char = components[0]
@@ -276,19 +253,14 @@ def run(image, character, display_bool, final_list):
                 isolated_components = isolate(image,[top,bottom])
                 top = isolated_components[0]
                 bottom = isolated_components[1]
-                # top = image.crop(top)
-                # bottom = image.crop(bottom)
 
                 display(top, display_bool)
                 display(bottom, display_bool)
                 t = run(top, top_char, display_bool, final_list)
                 b = run(bottom, bottom_char, display_bool, final_list)
-                #return [t, b]
             
             if strucutre == "a": #across
                 left, right = across(image, "n") #left/right dims
-                # left = image.crop(left)
-                # right = image.crop(right)
                 isolated_components = isolate(image,[left,right])
                 left = isolated_components[0]
                 right = isolated_components[1]
@@ -296,23 +268,20 @@ def run(image, character, display_bool, final_list):
                 display(right, display_bool)
                 l = run(left, components[0], display_bool, final_list)
                 r = run(right, components[1], display_bool, final_list)
-                #return [l, r]
 
             if strucutre[0] == "s": #surround
                 if strucutre[1] is not None:
-                    if structure[2] is not None:
+                    if strucutre[2] is not None:
                         s = s_surround(image, strucutre[1], strucutre[2]) #inner dims
-                        # inner = image.crop(s)
-                        inner = isolate(image,[s])
+                        isolated = isolate(image,[s])
+                        inner = isolated[0]
                         display(inner, display_bool)
                         outer = remove(image, s)
                         display(outer, display_bool)
                         o = run(outer, components[0], display_bool, final_list)
                         s = run(s, components[1], display_bool, final_list)
-                        #return [o, s]
                 else: #equivalent to withtin
                     w = w_contained(image)
-                    # inner = image.crop(w)
                     isolated_components = isolate(image,[w])
                     inner = isolated_components[0]
                     display(inner, display_bool)
@@ -320,11 +289,9 @@ def run(image, character, display_bool, final_list):
                     display(outer, display_bool)
                     i = run(inner, components[0], display_bool, final_list)
                     o = run(outer, components[1], display_bool, final_list)
-                    #return [i, o]
 
             if strucutre[0] == "w": #within
                 w = w_contained(image) #inner dims
-                # inner = image.crop(w) 
                 isolated_components = isolate(image,[w])
                 inner = isolated_components[0]
                 display(inner, display_bool)
@@ -333,30 +300,15 @@ def run(image, character, display_bool, final_list):
                 i = run(inner, components[0], display_bool, final_list)
                 o = run(outer, components[1], display_bool, final_list)
         else:
-            final_list.append(image)
-            # print(character)
-            # print(d.get_composition_structure(character))            
+            if type(image) is not tuple:
+                final_list.append(image)         
     else:
-        final_list.append(image)
-        # print(character)
-        # print(d.get_composition_structure(character))
-
-
-
-
+        if type(image) is not tuple:
+            final_list.append(image)
 
 def segment(image):
-    #image_name = letter + "_resized.png"
-    #im = Image.open(image_name)
     file = open('cnn_output_character.txt', 'r', encoding='utf8')
     character = file.read()
     final_list = []
     run(image, character, False, final_list)
     return final_list
-
-#letter = "jia"
-#letter = "zhao_good"
-#letter = "ting"
-#letter = "RightAngle_test_1"
-
-

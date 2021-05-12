@@ -64,7 +64,7 @@ else:
         for png in os.listdir(os.path.join(TEST_PATH, v)):
             label_pngs.append((k, v, png))
 
-    print("Total number of test samples:", len(label_pngs))
+    # print("Total number of test samples:", len(label_pngs))
     test_data = np.ndarray([len(label_pngs), IMG_SIZE, IMG_SIZE],
                            dtype=np.uint8)
     test_label = np.ndarray([len(label_pngs)], dtype=np.uint32)
@@ -102,7 +102,7 @@ if args.infile:
     preds = model.predict(x_test)
     top3 = top_predictions(3,preds[0])
     top = top3[0]
-    print("Prediction: top3:", top_predictions(3, preds[0]))
+    # print("Prediction: top3:", top_predictions(3, preds[0]))
 
 elif Pred_Details:
     preds = model.predict(x_test)
@@ -111,13 +111,13 @@ elif Pred_Details:
         if p != test_label[k]:
             top3 = top_predictions(3,v)
             top = top3[0]
-            print("Wrong prediction: top3:", top3,
-                  "label/file:", label_pngs[k][1], label_pngs[k][2])
+            # print("Wrong prediction: top3:", top3,
+            #       "label/file:", label_pngs[k][1], label_pngs[k][2])
     
 else:
     loss, acc = model.evaluate(x_test, y_test, batch_size=64)
-    print("Loss:", loss)
-    print("Accuracy:", acc)
+    # print("Loss:", loss)
+    # print("Accuracy:", acc)
 
 
 def get_structure(character):
@@ -155,6 +155,7 @@ def grayscale(image):
 
 
 top_character = list(top)[0]
+print(top_character)
 file = open('cnn_output_character.txt', 'w', encoding='utf8')
 file.write(top_character)
 file.close()

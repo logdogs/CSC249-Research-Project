@@ -13,24 +13,6 @@ import scipy.ndimage as nd
 from numpy.core.arrayprint import ComplexFloatingFormat
 import comparisons
 
-# Function to remove the shadows from an image so that our method for finding the character will work
-def remove_shadows(image):
-    rgb_planes = cv2.split(image)
-
-    result_planes = []
-    result_norm_planes = []
-    for plane in rgb_planes:
-        dilated_img = cv2.dilate(plane, np.ones((7,7), np.uint8))
-        bg_img = cv2.medianBlur(dilated_img, 21)
-        diff_img = 255 - cv2.absdiff(plane, bg_img)
-        norm_img = cv2.normalize(diff_img,None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
-        result_planes.append(diff_img)
-        result_norm_planes.append(norm_img)
-
-    # result = cv2.merge(result_planes)
-    result_norm = cv2.merge(result_norm_planes)
-    return result_norm
-
 # Simple grayscale calculation function
 def grayscale(image):
     return np.dot(image[:,:], [1/3,1/3,1/3])
@@ -123,65 +105,8 @@ def run_CNN(input_name,save_name):
     save(to_save,save_name)
     subprocess.call("python model_test.py " + save_name, shell=True)
 
-# # from skimage.morphology import skeletonize
-# import matplotlib
-# import matplotlib.pyplot as plt
-# # import skimage.io as io
-# import numpy
-# "load image data"
-
-# "Convert gray images to binary images using Otsu's method"
-# # from skimage.filters import threshold_otsu
-# #Otsu_Threshold = threshold_otsu(Img_Original)   
-# #BW_Original = Img_Original < Otsu_Threshold    # must set object region as 1, background region as 0 !
-
-# def neighbours(x,y,image):
-#     "Return 8-neighbours of image point P1(x,y), in a clockwise order"
-#     img = image
-#     x_1, y_1, x1, y1 = x-1, y-1, x+1, y+1
-#     return [ img[x_1][y], img[x_1][y1], img[x][y1], img[x1][y1],     # P2,P3,P4,P5
-#                 img[x1][y], img[x1][y_1], img[x][y_1], img[x_1][y_1] ]    # P6,P7,P8,P9
-
-# def transitions(neighbours):
-#     "No. of 0,1 patterns (transitions from 0 to 1) in the ordered sequence"
-#     n = neighbours + neighbours[0:1]      # P2, P3, ... , P8, P9, P2
-#     return sum( (n1, n2) == (0, 1) for n1, n2 in zip(n, n[1:]) )  # (P2,P3), (P3,P4), ... , (P8,P9), (P9,P2)
-
-# def zhangSuen(image):
-#     "the Zhang-Suen Thinning Algorithm"
-#     Image_Thinned = image.copy()  # deepcopy to protect the original image
-#     changing1 = changing2 = 1        #  the points to be removed (set as 0)
-#     while changing1 or changing2:   #  iterates until no further changes occur in the image
-#         # Step 1
-#         changing1 = []
-#         rows, columns = Image_Thinned.shape               # x for rows, y for columns
-#         for x in range(1, rows - 1):                     # No. of  rows
-#             for y in range(1, columns - 1):            # No. of columns
-#                 P2,P3,P4,P5,P6,P7,P8,P9 = n = neighbours(x, y, Image_Thinned)
-#                 if (Image_Thinned[x][y] == 1     and    # Condition 0: Point P1 in the object regions 
-#                     2 <= sum(n) <= 6   and    # Condition 1: 2<= N(P1) <= 6
-#                     transitions(n) == 1 and    # Condition 2: S(P1)=1  
-#                     P2 * P4 * P6 == 0  and    # Condition 3   
-#                     P4 * P6 * P8 == 0):         # Condition 4
-#                     changing1.append((x,y))
-#         for x, y in changing1: 
-#             Image_Thinned[x][y] = 0
-#         # Step 2
-#         changing2 = []
-#         for x in range(1, rows - 1):
-#             for y in range(1, columns - 1):
-#                 P2,P3,P4,P5,P6,P7,P8,P9 = n = neighbours(x, y, Image_Thinned)
-#                 if (Image_Thinned[x][y] == 1   and        # Condition 0
-#                     2 <= sum(n) <= 6  and       # Condition 1
-#                     transitions(n) == 1 and      # Condition 2
-#                     P2 * P4 * P8 == 0 and       # Condition 3
-#                     P2 * P6 * P8 == 0):            # Condition 4
-#                     changing2.append((x,y))    
-#         for x, y in changing2: 
-#             Image_Thinned[x][y] = 0
-#     return Image_Thinned
- 
-# https://medium.com/analytics-vidhya/skeletonization-in-python-using-opencv-b7fa16867331
+# Source of this algorithm:
+#   https://medium.com/analytics-vidhya/skeletonization-in-python-using-opencv-b7fa16867331
 def skeletonize(image):
     ret,img = cv2.threshold(image,0,255,0)
     size = np.size(img)
@@ -197,12 +122,15 @@ def skeletonize(image):
             break
     return skel
 
+# Checks for a given pixel whether or no there is another character pixel in any of the 8 cells around it
 def has_adjacent_character_pixel(image,x,y):
     if image[x-1,y] != 0 or image[x,y-1] != 0 or image[x-1,y-1] != 0 or image[x+1,y] != 0 or image[x,y+1] != 0 or image[x+1,y+1] != 0:
         return True
     else:
         return False
 
+# Removes "noise" which is just a remnant of thickness (we don't want this because we want our comparisons to
+#   be thickness-independent. That is, a character can still be well written even if the strokes are thick)
 def clean_image(image):
     cleaned = np.copy(image)
     for i in range(1,95):
@@ -211,26 +139,17 @@ def clean_image(image):
                 cleaned[i,j] = 0
     return cleaned
 
-
+# Function for test_all_images.py
+#   *** IMPORTANT ***
+#   For this to work, you must comment out the call to main() at the very end of this file.
 def run(file):
-    #args = sys.argv
-    #assert len(args) == 2, "Should run as 'python primer.py <image_of_character>'"
-    #input_name = args[1]
-    #file_name = input_name.split('.')[0]
     file_name = file.split('.')[0]
     file_name += "_resized.png"
-    # run_CNN(input_name,file_name)
-    # sigma = convert_for_CNN(input_name)
     run_CNN(file,file_name)
     sigma = convert_for_CNN(file)
     sigma_prime = imageio.imread("res.png")
-
-    # sigma_skel = clean_image(skeletonize(sigma))
-    # sigma_prime_skel = clean_image(skeletonize(sigma_prime))
     sigma_skel = skeletonize(sigma)
     sigma_prime_skel = skeletonize(sigma_prime)
-    
-    
     
     p, s, g = comparisons.compare(sigma_skel,sigma_prime_skel)
     file = open('cnn_output_character.txt', 'r', encoding='utf8')
@@ -239,9 +158,6 @@ def run(file):
     os.remove(file_name)
 
     return p, s, g, character
-
-
-
 
 def main():
     args = sys.argv
@@ -253,46 +169,11 @@ def main():
     sigma = convert_for_CNN(input_name)
     sigma_prime = imageio.imread("res.png")
 
-    # sigma_skel = clean_image(skeletonize(sigma))
-    # sigma_prime_skel = clean_image(skeletonize(sigma_prime))
-    sigma_skel = skeletonize(sigma)
-    sigma_prime_skel = skeletonize(sigma_prime)
-    # "Display the results"
-    # fig, ax = plt.subplots(1, 2)
-    # ax1, ax2 = ax.ravel()
-    # ax1.imshow(sigma, cmap=plt.cm.gray)
-    # ax1.set_title('sigma')
-    # ax1.axis('off')
-    # ax2.imshow(sigma_skel, cmap=plt.cm.gray)
-    # ax2.set_title('Skeleton of the image')
-    # ax2.axis('off')
-    # plt.show()
+    sigma_skel = clean_image(skeletonize(sigma))
+    sigma_prime_skel = clean_image(skeletonize(sigma_prime))
 
-    # fig, ax = plt.subplots(1, 2)
-    # ax1, ax2 = ax.ravel()
-    # ax1.imshow(sigma_prime, cmap=plt.cm.gray)
-    # ax1.set_title('sigma_prime')
-    # ax1.axis('off')
-    # ax2.imshow(sigma_prime_skel, cmap=plt.cm.gray)
-    # ax2.set_title('Skeleton of the image')
-    # ax2.axis('off')
-    # plt.show()
-
-    # comparisons.structural_similarity(sigma_skel,sigma_prime_skel)
-    # print("g(x) = ", comparisons.g(sigma_skel,sigma_prime_skel))   
-    # print("s(x) = ", comparisons.s(sigma_skel,sigma_prime_skel))
-    # print("p(x) = ", comparisons.p(sigma_skel,sigma_prime_skel))
+    comparisons.compare(sigma_skel,sigma_prime_skel)
     
-    
-    # comparisons.compare(sigma_skel,sigma_prime_skel)
-    print("p == ",comparisons.p(sigma_skel, sigma_prime_skel))
-    
-    # plt.figure()
-    # plt.imshow(sigma_prime,cmap='gray')
-    # plt.figure()
-    # plt.imshow(sigma_prime_skel,cmap='gray')
-    # plt.show()
-
     fig,axs = plt.subplots(1,3)
     axs1,axs2,axs3 = axs.ravel()
     axs1.imshow(sigma_skel,cmap='gray')
@@ -306,14 +187,12 @@ def main():
     axs3.axis('off')
     plt.savefig("for_presentation.png")
     plt.show()
-    comparisons.structural_similarity(sigma_skel,sigma_prime_skel)
     sigma_seg = rs.segment(im.fromarray(sigma_skel))
+    for i in sigma_seg:
+        print(i)
     sigma_prime_seg = rs.segment(im.fromarray(sigma_prime_skel))
-    
-    # for i in sigma_seg:
-    #     i.show()
-    # for i in sigma_prime_seg:
-    #     i.show()
+    for i in sigma_prime_seg:
+        print(i)
     # Cleanup the intermediate file created for sigma_prime
     os.remove(file_name)
 main()
