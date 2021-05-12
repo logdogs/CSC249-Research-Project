@@ -195,4 +195,4 @@ def main():
         print(i)
     # Cleanup the intermediate file created for sigma_prime
     os.remove(file_name)
-main()
+#main()

@@ -241,12 +241,13 @@ def isolate(x, bounds_list):
 
 def run(image, character, display_bool, final_list):
     possibilities = "das"
+    orientation = "lt"
     d = dl.decomp_dictionary()
-    strucutre = d.get_composition_structure(character)
-    if character != '𧰨' and strucutre[0] in possibilities:
+    structure = d.get_composition_structure(character)
+    if character != '𧰨' and structure[0] in possibilities:
         components = d.get_components(character)
         if len(components) > 1:
-            if strucutre == "d": #down
+            if structure == "d": #down
                 top_char = components[0]
                 bottom_char = components[1]
                 top, bottom = down(image, "n") #top/bottom dims
@@ -259,7 +260,7 @@ def run(image, character, display_bool, final_list):
                 t = run(top, top_char, display_bool, final_list)
                 b = run(bottom, bottom_char, display_bool, final_list)
             
-            if strucutre == "a": #across
+            if structure == "a": #across
                 left, right = across(image, "n") #left/right dims
                 isolated_components = isolate(image,[left,right])
                 left = isolated_components[0]
@@ -269,10 +270,10 @@ def run(image, character, display_bool, final_list):
                 l = run(left, components[0], display_bool, final_list)
                 r = run(right, components[1], display_bool, final_list)
 
-            if strucutre[0] == "s": #surround
-                if strucutre[1] is not None:
-                    if strucutre[2] is not None:
-                        s = s_surround(image, strucutre[1], strucutre[2]) #inner dims
+            if structure[0] == "s": #surround
+                if structure[1] is not None:
+                    if structure[2] is not None:
+                        s = s_surround(image, structure[1], structure[2]) #inner dims
                         isolated = isolate(image,[s])
                         inner = isolated[0]
                         display(inner, display_bool)
@@ -290,7 +291,7 @@ def run(image, character, display_bool, final_list):
                     i = run(inner, components[0], display_bool, final_list)
                     o = run(outer, components[1], display_bool, final_list)
 
-            if strucutre[0] == "w": #within
+            if structure[0] == "w": #within
                 w = w_contained(image) #inner dims
                 isolated_components = isolate(image,[w])
                 inner = isolated_components[0]
