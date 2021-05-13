@@ -11,8 +11,9 @@ sheet1 = wb.add_sheet('Sheet 1')
   
 
 
-path = 'C:/Users/dband/Documents/handwritten_character_examples/'
-# path = "handwritten_character_examples/"
+#path = 'C:/Users/dband/Documents/handwritten_character_examples/'
+#path = "handwritten_character_examples2/"
+path = "chinese_pics/"
 files = os.listdir(path)
 
 name_col = 0
@@ -21,6 +22,7 @@ cnn_char_col = 2
 p_col = 3
 s_col = 4
 g_col = 5
+rating_col = 6
 
 sheet1.write(0, 0, 'Character')
 sheet1.write(0, 1, 'Quality')
@@ -28,6 +30,7 @@ sheet1.write(0, 2, 'CNN')
 sheet1.write(0, 3, 'P')
 sheet1.write(0, 4, 'S')
 sheet1.write(0, 5, 'G')
+sheet1.write(0, 6, 'Rating')
 
 counter = 1
 
@@ -40,7 +43,7 @@ for f in sorted(files, key=str.lower):
     print(ending)
     if (ending == "png" or ending == "jpeg" or ending == "jpg"):
         name, quality = filename.split("_")
-        p, s, g, cnn_char = prm.run(path+f)
+        p, s, g, cnn_char, rating = prm.run(path+f)
 
 
         sheet1.write(counter, name_col, name)
@@ -49,11 +52,13 @@ for f in sorted(files, key=str.lower):
         sheet1.write(counter, p_col, float(p))
         sheet1.write(counter, s_col, s)
         sheet1.write(counter, g_col, g)
+        sheet1.write(counter, rating_col, rating)
 
         counter +=1
-        if counter == 139:
-            break
+        # if counter == 139:
+        #     break
+        wb.save('Miller Handwriting Output.xls')
 
 
   
-wb.save('Handwriting Output.xls')
+wb.save('Miller Handwriting Output.xls')

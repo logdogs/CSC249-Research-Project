@@ -256,6 +256,30 @@ def get_alpha(Gamma_before, delta_before):
                 delta_card += 1
     return delta_card / Gamma_card
 
+def get_rating(p, s, g):
+    p_thresh = 0.8037890294
+    s_thresh = 0.0140949591 
+    g_thresh = 0.5144364309
+
+    num_good = 0
+    if p > p_thresh:
+        num_good += 1
+    if s > s_thresh:
+        num_good += 1
+    if g > g_thresh:
+        num_good += 1
+
+    if num_good == 3:
+        return "good"
+    if num_good == 2:
+        return "okay"
+    if num_good == 1:
+        return "bad"
+        #return "okay"
+    if num_good == 0:
+        return "really bad"
+        #return "bad"
+
 # Compare a character and it's printed version: sigma : sigma'
 # Two cases for sigma/sigma':
 #   1) Base case: 1 Component, no segmentation
@@ -264,7 +288,7 @@ def compare(sigma,sigma_prime):
     sigma_seg = rs.segment(sigma)
     sigma_prime_seg = rs.segment(sigma_prime)
     
-    sigma_seg[0].show()
+    #sigma_seg[0].show()
 
     if len(sigma_seg) > 1: # case 2
         component_pairs = []
@@ -295,5 +319,5 @@ def compare(sigma,sigma_prime):
     print("p -", overall_p_val)
     print("s -", overall_s_val)
     print("g -", overall_g_val)
-    return overall_p_val, overall_s_val, overall_g_val
+    return overall_p_val, overall_s_val, overall_g_val, get_rating(overall_p_val, overall_s_val, overall_g_val)
         
