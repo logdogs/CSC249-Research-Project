@@ -121,7 +121,7 @@ def across(image, orientation):
     lower_bound = int(.2 * adjusted_width + left_most) 
     upper_bound = int(.8 * adjusted_width + left_most) 
     if orientation == "l":
-        upper_bound = int(0.5 * adjusted_width + left_most(data))
+        upper_bound = int(0.5 * adjusted_width + left_most)
     if orientation == "r":
         lower_bound = int(0.5 * adjusted_width + left_most)
     for x in range(width):
@@ -246,7 +246,7 @@ def run(image, character, display_bool, final_list):
     structure = d.get_composition_structure(character)
     if character != '𧰨' and structure[0] in possibilities:
         components = d.get_components(character)
-        if len(components) > 1:
+        if len(components) > 1 and image.size is not None and type(image.size) is tuple:
             if structure == "d": #down
                 top_char = components[0]
                 bottom_char = components[1]
@@ -271,16 +271,16 @@ def run(image, character, display_bool, final_list):
                 r = run(right, components[1], display_bool, final_list)
 
             if structure[0] == "s": #surround
-                if structure[1] is not None:
-                    if structure[2] is not None:
-                        s = s_surround(image, structure[1], structure[2]) #inner dims
-                        isolated = isolate(image,[s])
-                        inner = isolated[0]
-                        display(inner, display_bool)
-                        outer = remove(image, s)
-                        display(outer, display_bool)
-                        o = run(outer, components[0], display_bool, final_list)
-                        s = run(s, components[1], display_bool, final_list)
+                if len(structure) >=2:
+                    #if structure[2] is not None:
+                    s = s_surround(image, structure[1], structure[2]) #inner dims
+                    isolated = isolate(image,[s])
+                    inner = isolated[0]
+                    display(inner, display_bool)
+                    outer = remove(image, s)
+                    display(outer, display_bool)
+                    o = run(outer, components[0], display_bool, final_list)
+                    s = run(s, components[1], display_bool, final_list)
                 else: #equivalent to withtin
                     w = w_contained(image)
                     isolated_components = isolate(image,[w])

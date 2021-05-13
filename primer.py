@@ -151,13 +151,13 @@ def run(file):
     sigma_skel = skeletonize(sigma)
     sigma_prime_skel = skeletonize(sigma_prime)
     
-    p, s, g = comparisons.compare(sigma_skel,sigma_prime_skel)
+    p, s, g, rating = comparisons.compare(sigma_skel,sigma_prime_skel)
     file = open('cnn_output_character.txt', 'r', encoding='utf8')
     character = file.read()
 
     os.remove(file_name)
 
-    return p, s, g, character
+    return p, s, g, character, rating
 
 def main():
     args = sys.argv
