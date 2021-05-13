@@ -15,9 +15,6 @@ def correct_pixel_vals(character):
                 corrected[i,j] = 1
     return corrected
 
-
-# For data on the results of this:
-#   https://docs.google.com/spreadsheets/d/1C2F6ATsXjz7HA5sOvN5NuVwXconegeas81zqWVPuz3Y/edit?usp=sharing
 def structural_similarity(character, comparison):
     char_arr = np.asarray(character)
     comp_arr = np.asarray(comparison)
@@ -102,28 +99,6 @@ def s(x,y):
 
     c3 = ((0.03) ** 2) /2
     return (sigma_xy + c3)/(sigma_x * sigma_y + c3)
-# The location component from my formalization (g for \Gamma)
-# def g(x,y):
-#     c_1 = []
-#     c_2 = []
-#     for i in range(96):
-#         for j in range(96):
-#             if x[i,j] != 0:
-#                 c_1.append([i,j])
-#             if y[i,j] != 0:
-#                 c_2.append([i,j])
-#     alpha_1 = 1 / len(c_1)
-#     alpha_2 = 1 / len(c_2)
-#     # As per the convention in the file, 's' is short for a sum
-#     s_1 = 0.0
-#     s_2 = 0.0
-#     for pixel in c_1:
-#         s_1 += sum(pixel)
-#     for pixel in c_2:
-#         s_2 += sum(pixel)
-#     s_1 *= alpha_1
-#     s_2 *= alpha_2
-#     return abs(s_1 - s_2)
 
 # SHOULD ALWAYS RETAIN THE SAME PASSING CONVENTION TO g(x,y):
 #    x --> sigma
