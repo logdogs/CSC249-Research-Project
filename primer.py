@@ -1,3 +1,8 @@
+"""
+    I make many references to a "formalization" in the comments of this code and the code for comparisons. The
+        thing to which I'm referring is just a LaTeX doc that I wrote up formalizing all the procedures used.
+        This is also why there are some strange naming conventions, which is especially present in comparisons.py
+"""
 import math
 import cv2
 import numpy as np

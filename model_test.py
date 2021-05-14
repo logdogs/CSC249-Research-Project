@@ -17,7 +17,6 @@ import PIL.ImageFont as ImageFont
 import PIL.ImageDraw as ImageDraw
 import cv2
 
-# from scipy.misc import imread
 from imageio import imread
 from keras.utils.np_utils import to_categorical
 from keras import backend
@@ -30,7 +29,6 @@ args = parser.parse_args()
 
 random.seed(888)
 np.random.seed(888)
-#tf.set_random_seed(888)
 tf.random.set_seed(888)
 
 IMG_SIZE = 96
@@ -64,7 +62,6 @@ else:
         for png in os.listdir(os.path.join(TEST_PATH, v)):
             label_pngs.append((k, v, png))
 
-    # print("Total number of test samples:", len(label_pngs))
     test_data = np.ndarray([len(label_pngs), IMG_SIZE, IMG_SIZE],
                            dtype=np.uint8)
     test_label = np.ndarray([len(label_pngs)], dtype=np.uint32)
@@ -102,7 +99,6 @@ if args.infile:
     preds = model.predict(x_test)
     top3 = top_predictions(3,preds[0])
     top = top3[0]
-    # print("Prediction: top3:", top_predictions(3, preds[0]))
 
 elif Pred_Details:
     preds = model.predict(x_test)
@@ -111,18 +107,11 @@ elif Pred_Details:
         if p != test_label[k]:
             top3 = top_predictions(3,v)
             top = top3[0]
-            # print("Wrong prediction: top3:", top3,
-            #       "label/file:", label_pngs[k][1], label_pngs[k][2])
     
 else:
     loss, acc = model.evaluate(x_test, y_test, batch_size=64)
-    # print("Loss:", loss)
-    # print("Accuracy:", acc)
-
 
 def get_structure(character):
-    #file = open("cnn_output_character.txt", 'r', encoding='utf8')
-    #character = file.read()
     with open('cld2.csv', newline='', encoding='utf8') as csvfile:
         reader = csv.DictReader(csvfile)
 
@@ -163,23 +152,16 @@ file.close()
 img = np.zeros((200,400,3),np.uint8)
 b,g,r,a = 255,255,255,0
 
-## Use simsum.ttc to write Chinese.
-fontpath = "./ARIALUNI.TTF" # <== 这里是宋体路径
+fontpath = "./ARIALUNI.TTF"
 font = ImageFont.truetype(fontpath, 175)
 img_pil = Image.fromarray(img)
 draw = ImageDraw.Draw(img_pil)
-#draw.text((50, 80),  "端午节就要到了", font = font, fill = (b, g, r, a))
 draw.text((20, 20), top_character, font = font, fill = (b, g, r, a))
 img = np.array(img_pil)
 
 cropped = bound_image(grayscale(img))
 resized = cv2.resize(cropped,(96,96),interpolation=cv2.INTER_CUBIC)
 
-## Display 
-# cv2.imshow("res", resized)
-# cv2.waitKey()
-# cv2.destroyAllWindows()
 cv2.imwrite("res.png", resized)
-
 
 backend.clear_session()

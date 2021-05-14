@@ -27,13 +27,6 @@ def structural_similarity(character, comparison):
     ssim2 = SSIM(comp_arr, og_comp)
     print(ssim1)
     print(ssim2)
-    
-    # plt.figure()
-    # plt.imshow(comp_arr,cmap='gray')
-    # plt.figure()
-    # plt.imshow(og_comp,cmap='gray')
-    # plt.show()
-
 
 # So probably remove the luminocity and contrast calculations from the formulation of SSIM
 #   If possible also add in (via multiplication as to fit the formulation), component for characters
@@ -144,11 +137,9 @@ def proportion_taken(x):
             for j in range(32):
                 if x[i+base_arr[b][0],j+base_arr[b][1]] != 0:
                     poz += 1
-            
         to_ret.append(poz / (32 * 32))
-            # to_ret.append(poz)
-
     return to_ret
+
 def p(x,y):
     prop_x = proportion_taken(x)
     prop_y = proportion_taken(y)
@@ -160,28 +151,6 @@ def p(x,y):
         overall_y += (1/9) * prop_y[i]
     return min(overall_x,overall_y) / max(overall_x,overall_y)
 
-    # metric = 0.0
-    # comp_vect = []
-    # for i in range(len(prop_x)):
-    #     overall_x += (1/9) * prop_x[i]
-    #     overall_y += (1/9) * prop_y[i]
-    # return min(overall_x,overall_y) / max(overall_x,overall_y)
-    # return overall
-
-    metric = 0.0
-    comp_vect = []
-    for i in range(len(prop_x)):
-        if prop_x[i] == 0 and prop_y[i] == 0:
-            comp_vect.append(1)
-        elif prop_x[i] == 0 and prop_y[i] != 0:
-            comp_vect.append(0)
-        elif prop_x[i] != 0 and prop_y[i] == 0:
-            comp_vect.append(0)
-        else:
-            comp_vect.append(min(prop_x[i],prop_y[i])/max(prop_x[i],prop_y[i]))
-    print(comp_vect)
-    print(len(comp_vect))
-    return sum(comp_vect)/len(comp_vect)
 # The moment of truth (not bad! Just... different...)
 def SSIM(x,y):
     # I'm not doing the simplified form for a very definitive reason
@@ -250,10 +219,8 @@ def get_rating(p, s, g):
         return "okay"
     if num_good == 1:
         return "bad"
-        #return "okay"
     if num_good == 0:
         return "really bad"
-        #return "bad"
 
 # Compare a character and it's printed version: sigma : sigma'
 # Two cases for sigma/sigma':
@@ -262,20 +229,15 @@ def get_rating(p, s, g):
 def compare(sigma,sigma_prime):
     sigma_seg = rs.segment(sigma)
     sigma_prime_seg = rs.segment(sigma_prime)
-    
-    #sigma_seg[0].show()
 
     if len(sigma_seg) > 1: # case 2
         component_pairs = []
         for i in range(len(sigma_seg)):
             component_pairs.append((sigma_seg[i],sigma_prime_seg[i]))
-        # component_comp_vals = collections.defaultdict(tuple)
         component_comp_vals = []
-        # component_comp_vals = collections.defaultdict(tuple)
         for pair in component_pairs:
             # Recall that pair[0] is always simga, and pair[1] is always sigma'
             # We will have component_comp_vals have list always of the form [p,s,g]
-            # component_comp_vals[pair] = [p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))]
             component_comp_vals.append([list(pair)[0], list(pair)[1], p(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),s(np.asarray(list(pair)[0]),np.asarray(list(pair)[1])),g(np.asarray(list(pair)[0]),np.asarray(list(pair)[1]))])
 
         overall_p_val = 0.0
